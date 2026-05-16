@@ -122,7 +122,7 @@ CREATE TABLE alumnos (
     ciudad_nacimiento VARCHAR(100),
     municipio_nacimiento VARCHAR(100),
     nacionalidad VARCHAR(100),
-    sexo ENUM('MASCULINO','FEMENINO'),
+    sexo ENUM('M','F'),
     curp VARCHAR(18),
     direccion TEXT,
     ciudad VARCHAR(100),
@@ -428,7 +428,7 @@ CREATE TABLE asistencias (
     id_asistencia BIGINT PRIMARY KEY AUTO_INCREMENT,
     id_carga BIGINT,
     fecha DATE,
-    asistencia BOOLEAN
+    asistencia BOOLEAN,
 
     CONSTRAINT fk_asistencia_carga
         FOREIGN KEY (id_carga)
