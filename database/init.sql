@@ -573,7 +573,6 @@ INSERT INTO roles (nombre) VALUES
 -- =========================================================
 -- USUARIO ADMINISTRADOR
 -- Password: Admin123*
--- (bcrypt de ejemplo)
 -- =========================================================
 
 INSERT INTO usuarios (
@@ -627,15 +626,22 @@ INSERT INTO carreras (
     estado
 ) VALUES
 (
-    'ING-SW',
-    'Ingenería en Desarrollo y Gestión de Software',
-    'INGENIERIA',
-    11,
+    'RVOE-BC-053-M2/14',
+    'Licenciatura en Criminología',
+    'LICENCIATURA',
+    9,
     TRUE
 ),
 (
-    'LIC-GAST',
+    'RVOE-BC-051-M2/14',
     'Licenciatura en Gastronomía',
+    'LICENCIATURA',
+    9,
+    TRUE
+),
+(
+    'RVOE-BC-L010-M2/17',
+    'Licenciatura en Nutrición',
     'LICENCIATURA',
     9,
     TRUE
@@ -653,14 +659,20 @@ INSERT INTO planes_estudio (
 ) VALUES
 (
     1,
-    'Plan 2025 Software',
-    '2025-01-01',
+    'Plan 2014 Criminología',
+    '01-01-2014',
     TRUE
 ),
 (
     2,
-    'Plan 2025 Gastronomía',
-    '2025-01-01',
+    'Plan 2014 Gastronomía',
+    '01-01-2014',
+    TRUE
+),
+(
+    3,
+    'Plan 2017 Nutrición',
+    '01-01-2017',
     TRUE
 );
 
@@ -674,11 +686,17 @@ INSERT INTO materias (
     creditos,
     estado
 ) VALUES
-('SW101', 'Fundamentos de Programación', 8, TRUE),
-('SW102', 'Base de Datos', 8, TRUE),
-('SW103', 'Desarrollo Web', 7, TRUE),
-('GAST101', 'Introducción a la Gastronomía', 6, TRUE),
-('GAST102', 'Higiene y Seguridad Alimentaria', 7, TRUE);
+('CRILI1', 'Criminalística I', 7.87, TRUE),
+('CRIM02', 'Criminología I', 7.87, TRUE),
+('CRINV1', 'Estadística Básica', 6.12, TRUE),
+('CRIM01', 'Informática Aplicada a la Criminología', 5.25, TRUE),
+('CRIJU1', 'Introducción al Estudio del Derecho', 6.12, TRUE),
+('CRIM03', 'Bases Biológicas del Comportamiento', 7.87, TRUE),
+('CRIM04', 'Criminología II', 7.87, TRUE),
+('CRIJU2', 'Derecho Constitucional', 7, TRUE),
+('CRIPS1', 'Introducción a la Psicología', 7.87, TRUE),
+('CRILI2', 'Sistemas de Identificación', 6.12, TRUE);
+
 
 -- =========================================================
 -- RELACIÓN PLAN - MATERIAS
@@ -691,11 +709,15 @@ INSERT INTO plan_materias (
     obligatoria
 ) VALUES
 (1, 1, 1, TRUE),
-(1, 2, 2, TRUE),
-(1, 3, 3, TRUE),
-
-(2, 4, 1, TRUE),
-(2, 5, 1, TRUE);
+(1, 2, 1, TRUE),
+(1, 3, 1, TRUE),
+(1, 4, 1, TRUE),
+(1, 5, 1, TRUE),
+(1, 6, 2, TRUE),
+(1, 7, 2, TRUE),
+(1, 8, 2, TRUE),
+(1, 9, 2, TRUE),
+(1, 10, 2, TRUE);
 
 -- =========================================================
 -- PRERREQUISITOS
@@ -706,17 +728,16 @@ INSERT INTO materias_prerrequisito (
     id_materia_requerida,
     tipo
 ) VALUES
-(2, 1, 'OBLIGATORIO'),
-(3, 2, 'OBLIGATORIO');
+(7, 2, 'OBLIGATORIO');
 
 -- =========================================================
 -- PARCIALES
 -- =========================================================
 
 INSERT INTO parciales (nombre, porcentaje) VALUES
-('Primer Parcial', 30),
-('Segundo Parcial', 30),
-('Tercer Parcial', 40);
+('Primer Parcial', 25),
+('Segundo Parcial', 25),
+('Tercer Parcial', 50);
 
 -- =========================================================
 -- TIPOS DE DOCUMENTO
@@ -740,8 +761,8 @@ INSERT INTO periodos (
     estado
 ) VALUES (
     'Enero - Abril 2026',
-    '2026-01-05',
-    '2026-04-30',
+    '05-01-2026',
+    '30-04-2026',
     'ACTIVO'
 );
 
@@ -755,7 +776,7 @@ INSERT INTO grupos (
     id_cuatrimestre,
     turno
 ) VALUES (
-    'IDS-101',
+    'CRIM27',
     1,
     1,
     'MATUTINO'
@@ -796,9 +817,9 @@ INSERT INTO docentes (
 ) VALUES (
     2,
     'DOC-001',
-    'Desarrollo Web',
-    'Maestría',
-    '2025-01-10',
+    'Criminología',
+    'Doctorado',
+    '10-01-2020',
     TRUE
 );
 
@@ -815,7 +836,7 @@ INSERT INTO grupos_materias (
     cupo_maximo
 ) VALUES (
     1,
-    1,
+    6,
     1,
     1,
     'A-101',
