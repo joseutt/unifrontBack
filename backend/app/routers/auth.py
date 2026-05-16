@@ -11,31 +11,21 @@ from fastapi.security import (
 
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
-
 from app.models.usuario import Usuario
 
 from app.core.security import (
     verify_password,
-    create_access_token
+    create_access_token,
+    get_current_user
 )
 
 from app.database import get_db
+from app.schemas.usuario import UsuarioResponse
 
 router = APIRouter(
     prefix="/auth",
     tags=["Auth"]
 )
-
-def get_db():
-
-    db = SessionLocal()
-
-    try:
-        yield db
-
-    finally:
-        db.close()
 
 @router.post("/login")
 def login(
@@ -78,3 +68,12 @@ def login(
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+@router.get(
+    "/me",
+    response_model=UsuarioResponse
+)
+def obtener_usuario_actual(
+    usuario: Usuario = Depends(get_current_user)
+):
+    return usuario

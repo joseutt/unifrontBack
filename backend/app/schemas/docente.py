@@ -16,6 +16,14 @@ class DocenteBase(BaseModel):
 class DocenteCreate(DocenteBase):
     pass
 
+class DocenteUpdate(BaseModel):
+    id_usuario: Optional[int] = None
+    numero_empleado: Optional[str] = None
+    especialidad: Optional[str] = None
+    grado_academico: Optional[str] = None
+    fecha_ingreso: Optional[date] = None
+    estado: Optional[bool] = None
+
 class DocenteResponse(DocenteBase):
     id_docente: int
     estado: bool

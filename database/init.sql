@@ -1,6 +1,9 @@
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 
-CREATE DATABASE unifront;
-USE unifront;
+CREATE DATABASE IF NOT EXISTS unifront
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE usuarios (
     id_usuario BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -556,3 +559,366 @@ ON asistencias(id_carga);
 
 CREATE INDEX idx_usuario_correo
 ON usuarios(correo);
+
+-- =========================================================
+-- ROLES FUNDAMENTALES
+-- =========================================================
+
+INSERT INTO roles (nombre) VALUES
+('ADMIN'),
+('CONTROL_ESCOLAR'),
+('DOCENTE'),
+('ALUMNO');
+
+-- =========================================================
+-- USUARIO ADMINISTRADOR
+-- Password: Admin123*
+-- (bcrypt de ejemplo)
+-- =========================================================
+
+INSERT INTO usuarios (
+    nombre,
+    apellido_paterno,
+    apellido_materno,
+    correo,
+    password,
+    telefono,
+    estado
+) VALUES (
+    'Martin',
+    'Administrador',
+    'Sistema',
+    'admin@unifront.com',
+    '$2b$12$fDyZK5l1./1TY19rgskvc.lVaerFgt3eIjBN3JVUl2guZ1i0V64Ii',
+    '6861234567',
+    'ACTIVO'
+);
+
+-- Asignar rol ADMIN al usuario
+INSERT INTO usuario_roles (id_usuario, id_rol)
+VALUES (1, 1);
+
+-- =========================================================
+-- CUATRIMESTRES
+-- =========================================================
+
+INSERT INTO cuatrimestres (numero, nombre) VALUES
+(1, 'Primer Cuatrimestre'),
+(2, 'Segundo Cuatrimestre'),
+(3, 'Tercer Cuatrimestre'),
+(4, 'Cuarto Cuatrimestre'),
+(5, 'Quinto Cuatrimestre'),
+(6, 'Sexto Cuatrimestre'),
+(7, 'Séptimo Cuatrimestre'),
+(8, 'Octavo Cuatrimestre'),
+(9, 'Noveno Cuatrimestre'),
+(10, 'Décimo Cuatrimestre'),
+(11, 'Onceavo Cuatrimestre');
+
+-- =========================================================
+-- CARRERAS
+-- =========================================================
+
+INSERT INTO carreras (
+    clave,
+    nombre,
+    nivel,
+    duracion_cuatrimestres,
+    estado
+) VALUES
+(
+    'ING-SW',
+    'Ingenería en Desarrollo y Gestión de Software',
+    'INGENIERIA',
+    11,
+    TRUE
+),
+(
+    'LIC-GAST',
+    'Licenciatura en Gastronomía',
+    'LICENCIATURA',
+    9,
+    TRUE
+);
+
+-- =========================================================
+-- PLANES DE ESTUDIO
+-- =========================================================
+
+INSERT INTO planes_estudio (
+    id_carrera,
+    nombre_plan,
+    fecha_inicio,
+    vigente
+) VALUES
+(
+    1,
+    'Plan 2025 Software',
+    '2025-01-01',
+    TRUE
+),
+(
+    2,
+    'Plan 2025 Gastronomía',
+    '2025-01-01',
+    TRUE
+);
+
+-- =========================================================
+-- MATERIAS BÁSICAS
+-- =========================================================
+
+INSERT INTO materias (
+    clave,
+    nombre,
+    creditos,
+    estado
+) VALUES
+('SW101', 'Fundamentos de Programación', 8, TRUE),
+('SW102', 'Base de Datos', 8, TRUE),
+('SW103', 'Desarrollo Web', 7, TRUE),
+('GAST101', 'Introducción a la Gastronomía', 6, TRUE),
+('GAST102', 'Higiene y Seguridad Alimentaria', 7, TRUE);
+
+-- =========================================================
+-- RELACIÓN PLAN - MATERIAS
+-- =========================================================
+
+INSERT INTO plan_materias (
+    id_plan,
+    id_materia,
+    id_cuatrimestre,
+    obligatoria
+) VALUES
+(1, 1, 1, TRUE),
+(1, 2, 2, TRUE),
+(1, 3, 3, TRUE),
+
+(2, 4, 1, TRUE),
+(2, 5, 1, TRUE);
+
+-- =========================================================
+-- PRERREQUISITOS
+-- =========================================================
+
+INSERT INTO materias_prerrequisito (
+    id_materia,
+    id_materia_requerida,
+    tipo
+) VALUES
+(2, 1, 'OBLIGATORIO'),
+(3, 2, 'OBLIGATORIO');
+
+-- =========================================================
+-- PARCIALES
+-- =========================================================
+
+INSERT INTO parciales (nombre, porcentaje) VALUES
+('Primer Parcial', 30),
+('Segundo Parcial', 30),
+('Tercer Parcial', 40);
+
+-- =========================================================
+-- TIPOS DE DOCUMENTO
+-- =========================================================
+
+INSERT INTO tipos_documento (nombre) VALUES
+('Acta de Nacimiento'),
+('CURP'),
+('Certificado'),
+('Fotografías'),
+('Comprobante de Domicilio');
+
+-- =========================================================
+-- PERIODO ACTIVO
+-- =========================================================
+
+INSERT INTO periodos (
+    nombre,
+    fecha_inicio,
+    fecha_fin,
+    estado
+) VALUES (
+    'Enero - Abril 2026',
+    '2026-01-05',
+    '2026-04-30',
+    'ACTIVO'
+);
+
+-- =========================================================
+-- GRUPO DE PRUEBA
+-- =========================================================
+
+INSERT INTO grupos (
+    nombre,
+    id_carrera,
+    id_cuatrimestre,
+    turno
+) VALUES (
+    'IDS-101',
+    1,
+    1,
+    'MATUTINO'
+);
+
+-- =========================================================
+-- DOCENTE DE PRUEBA
+-- =========================================================
+
+INSERT INTO usuarios (
+    nombre,
+    apellido_paterno,
+    apellido_materno,
+    correo,
+    password,
+    telefono,
+    estado
+) VALUES (
+    'Carlos',
+    'Ramirez',
+    'Lopez',
+    'docente@unifront.com',
+    '$2b$12$Q9mJzQ6hKJQ4m6Qk0xN1QeT8Qm9m1H8lQ0WfQJxP6i1Wkz7Y2F6eS',
+    '6865554444',
+    'ACTIVO'
+);
+
+INSERT INTO usuario_roles (id_usuario, id_rol)
+VALUES (2, 3);
+
+INSERT INTO docentes (
+    id_usuario,
+    numero_empleado,
+    especialidad,
+    grado_academico,
+    fecha_ingreso,
+    estado
+) VALUES (
+    2,
+    'DOC-001',
+    'Desarrollo Web',
+    'Maestría',
+    '2025-01-10',
+    TRUE
+);
+
+-- =========================================================
+-- GRUPO - MATERIA
+-- =========================================================
+
+INSERT INTO grupos_materias (
+    id_grupo,
+    id_materia,
+    id_docente,
+    id_periodo,
+    aula,
+    cupo_maximo
+) VALUES (
+    1,
+    1,
+    1,
+    1,
+    'A-101',
+    40
+);
+
+-- =========================================================
+-- ALUMNO DE PRUEBA
+-- =========================================================
+
+INSERT INTO usuarios (
+    nombre,
+    apellido_paterno,
+    apellido_materno,
+    correo,
+    password,
+    telefono,
+    estado
+) VALUES (
+    'Juan',
+    'Perez',
+    'Gomez',
+    'alumno@unifront.com',
+    '$2b$12$Q9mJzQ6hKJQ4m6Qk0xN1QeT8Qm9m1H8lQ0WfQJxP6i1Wkz7Y2F6eS',
+    '6869998888',
+    'ACTIVO'
+);
+
+INSERT INTO usuario_roles (id_usuario, id_rol)
+VALUES (3, 4);
+
+INSERT INTO alumnos (
+    matricula,
+    numero_control,
+    id_usuario,
+    id_carrera,
+    id_plan,
+    fecha_nacimiento,
+    ciudad_nacimiento,
+    municipio_nacimiento,
+    nacionalidad,
+    sexo,
+    curp,
+    direccion,
+    ciudad,
+    estado,
+    correo_contacto,
+    fecha_ingreso,
+    estatus
+) VALUES (
+    '20260001',
+    'UC20260001',
+    3,
+    1,
+    1,
+    '2005-06-15',
+    'Mexicali',
+    'Mexicali',
+    'Mexicana',
+    'M',
+    'PEGJ050615HBCRMS01',
+    'Colonia Centro',
+    'Mexicali',
+    'Baja California',
+    'juan.perez@example.com',
+    '2026-01-05',
+    'ACTIVO'
+);
+
+-- =========================================================
+-- INSCRIPCIÓN DEL ALUMNO
+-- =========================================================
+
+INSERT INTO inscripciones (
+    id_alumno,
+    id_grupo,
+    id_periodo,
+    fecha_inscripcion,
+    estado
+) VALUES (
+    1,
+    1,
+    1,
+    CURDATE(),
+    'ACTIVO'
+);
+
+-- =========================================================
+-- CARGA ACADÉMICA
+-- =========================================================
+
+INSERT INTO carga_academica (
+    id_alumno,
+    id_grupo_materia,
+    oportunidad,
+    intento,
+    estatus,
+    fecha_inscripcion
+) VALUES (
+    1,
+    1,
+    'ORDINARIO',
+    1,
+    'CURSANDO',
+    CURDATE()
+);

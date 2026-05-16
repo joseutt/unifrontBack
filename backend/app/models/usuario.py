@@ -8,7 +8,7 @@ from sqlalchemy import (
 )
 
 from sqlalchemy.orm import relationship
-
+from app.models.usuario_rol import usuario_roles
 from app.database import Base
 
 class Usuario(Base):
@@ -34,6 +34,6 @@ class Usuario(Base):
 
     roles = relationship(
         "Rol",
-        secondary="usuario_roles",
+        secondary=usuario_roles,
         back_populates="usuarios"
     )

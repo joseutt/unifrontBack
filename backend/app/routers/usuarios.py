@@ -1,30 +1,25 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 from app.schemas.usuario import (
     UsuarioCreate,
-    UsuarioResponse
+    UsuarioResponse,
+    UsuarioUpdate
 )
 
 from app.crud.crud_usuario import (
     get_usuarios,
-    create_usuario
+    get_usuario,
+    create_usuario,
+    update_usuario,
+    delete_usuario
 )
-
-from app.database import get_db
 
 router = APIRouter(
     prefix="/usuarios",
     tags=["Usuarios"]
 )
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get(
     "/",
@@ -35,6 +30,24 @@ def listar_usuarios(
 ):
     return get_usuarios(db)
 
+@router.get(
+    "/{usuario_id}",
+    response_model=UsuarioResponse
+)
+def obtener_usuario(
+    usuario_id: int,
+    db: Session = Depends(get_db)
+):
+    usuario = get_usuario(db, usuario_id)
+
+    if not usuario:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )
+
+    return usuario
+
 @router.post(
     "/",
     response_model=UsuarioResponse
@@ -44,3 +57,42 @@ def crear_usuario(
     db: Session = Depends(get_db)
 ):
     return create_usuario(db, usuario)
+
+@router.patch(
+    "/{usuario_id}",
+    response_model=UsuarioResponse
+)
+def actualizar_usuario(
+    usuario_id: int,
+    usuario: UsuarioUpdate,
+    db: Session = Depends(get_db)
+):
+    usuario_actualizado = update_usuario(
+        db,
+        usuario_id,
+        usuario
+    )
+
+    if not usuario_actualizado:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )
+
+    return usuario_actualizado
+
+@router.delete(
+    "/{usuario_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def eliminar_usuario(
+    usuario_id: int,
+    db: Session = Depends(get_db)
+):
+    eliminado = delete_usuario(db, usuario_id)
+
+    if not eliminado:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )

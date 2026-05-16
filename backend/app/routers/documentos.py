@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.crud.crud_alumno import get_alumno
 from app.services.document_service import generar_constancia
-from app.database import get_db
 
 router = APIRouter(
     prefix="/documentos",
@@ -19,6 +18,12 @@ def generar_pdf(
 ):
 
     alumno = get_alumno(db, alumno_id)
+
+    if not alumno:
+        raise HTTPException(
+            status_code=404,
+            detail="Alumno no encontrado"
+        )
 
     ruta = generar_constancia(alumno)
 

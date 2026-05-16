@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 class CalificacionBase(BaseModel):
     id_carga: int
@@ -9,6 +10,12 @@ class CalificacionBase(BaseModel):
 
 class CalificacionCreate(CalificacionBase):
     pass
+
+class CalificacionUpdate(BaseModel):
+    id_carga: Optional[int] = None
+    id_parcial: Optional[int] = None
+    calificacion: Optional[float] = None
+    capturado_por: Optional[int] = None
 
 class CalificacionResponse(CalificacionBase):
     id_calificacion: int

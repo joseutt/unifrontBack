@@ -12,6 +12,15 @@ class UsuarioBase(BaseModel):
 class UsuarioCreate(UsuarioBase):
     password: str
 
+class UsuarioUpdate(BaseModel):
+    nombre: Optional[str] = None
+    apellido_paterno: Optional[str] = None
+    apellido_materno: Optional[str] = None
+    correo: Optional[EmailStr] = None
+    telefono: Optional[str] = None
+    password: Optional[str] = None
+    estado: Optional[str] = None
+
 class UsuarioResponse(UsuarioBase):
     id_usuario: int
     estado: str
