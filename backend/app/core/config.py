@@ -5,11 +5,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SECRET_KEY = os.getenv(
-    "SECRET_KEY"
+    "SECRET_KEY",
+    "CAMBIAR_ESTA_CLAVE_EN_PRODUCCION"
 )
 
 ALGORITHM = os.getenv(
-    "ALGORITHM"
+    "ALGORITHM",
+    "HS256"
 )
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(

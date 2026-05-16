@@ -58,7 +58,7 @@ class Alumno(Base):
     nacionalidad = Column(String(100))
 
     sexo = Column(
-        Enum("MASCULINO", "FEMENINO")
+        Enum("M", "F")
     )
 
     curp = Column(String(18))

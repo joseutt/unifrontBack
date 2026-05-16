@@ -39,11 +39,7 @@ def get_alumno_by_id(
     db: Session,
     alumno_id: int
 ):
-    return (
-        db.query(Alumno)
-        .filter(Alumno.id == alumno_id)
-        .first()
-    )
+    return get_alumno(db, alumno_id)
 
 
 def update_alumno(
@@ -54,14 +50,14 @@ def update_alumno(
 
     alumno = (
         db.query(Alumno)
-        .filter(Alumno.id == alumno_id)
+        .filter(Alumno.id_alumno == alumno_id)
         .first()
     )
 
     if not alumno:
         return None
 
-    update_data = alumno_data.dict(
+    update_data = alumno_data.model_dump(
         exclude_unset=True
     )
 
@@ -72,3 +68,17 @@ def update_alumno(
     db.refresh(alumno)
 
     return alumno
+
+def delete_alumno(
+    db: Session,
+    alumno_id: int
+):
+    alumno = get_alumno(db, alumno_id)
+
+    if not alumno:
+        return False
+
+    db.delete(alumno)
+    db.commit()
+
+    return True

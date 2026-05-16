@@ -5,7 +5,7 @@ from sqlalchemy import (
 )
 
 from sqlalchemy.orm import relationship
-
+from app.models.usuario_rol import usuario_roles
 from app.database import Base
 
 class Rol(Base):
@@ -21,6 +21,6 @@ class Rol(Base):
 
     usuarios = relationship(
         "Usuario",
-        secondary="usuario_roles",
+        secondary=usuario_roles,
         back_populates="roles"
     )

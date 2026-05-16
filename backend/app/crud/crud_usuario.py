@@ -19,9 +19,12 @@ def create_usuario(
     db: Session,
     usuario: UsuarioCreate
 ):
+    usuario_data = usuario.model_dump(
+        exclude={"password"}
+    )
+
     nuevo_usuario = Usuario(
-        nombre=usuario.nombre,
-        correo=usuario.correo,
+        **usuario_data,
         password=hash_password(usuario.password)
     )
 
@@ -30,3 +33,44 @@ def create_usuario(
     db.refresh(nuevo_usuario)
 
     return nuevo_usuario
+
+def update_usuario(
+    db: Session,
+    usuario_id: int,
+    usuario_data
+):
+    usuario = get_usuario(db, usuario_id)
+
+    if not usuario:
+        return None
+
+    update_data = usuario_data.model_dump(
+        exclude_unset=True
+    )
+
+    password = update_data.pop("password", None)
+
+    for key, value in update_data.items():
+        setattr(usuario, key, value)
+
+    if password is not None:
+        usuario.password = hash_password(password)
+
+    db.commit()
+    db.refresh(usuario)
+
+    return usuario
+
+def delete_usuario(
+    db: Session,
+    usuario_id: int
+):
+    usuario = get_usuario(db, usuario_id)
+
+    if not usuario:
+        return False
+
+    db.delete(usuario)
+    db.commit()
+
+    return True

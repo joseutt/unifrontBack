@@ -1,23 +1,27 @@
 from fastapi import (
     APIRouter,
-    Depends
+    Depends,
+    HTTPException,
+    status
 )
 
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 
 from app.schemas.periodo import (
     PeriodoCreate,
-    PeriodoResponse
+    PeriodoResponse,
+    PeriodoUpdate
 )
 
 from app.crud.crud_periodo import (
     get_periodos,
-    create_periodo
+    get_periodo,
+    create_periodo,
+    update_periodo,
+    delete_periodo
 )
-
-from app.database import get_db
 
 router = APIRouter(
     prefix="/periodos",
@@ -35,6 +39,24 @@ def listar_periodos(
 ):
     return get_periodos(db)
 
+@router.get(
+    "/{periodo_id}",
+    response_model=PeriodoResponse
+)
+def obtener_periodo(
+    periodo_id: int,
+    db: Session = Depends(get_db)
+):
+    periodo = get_periodo(db, periodo_id)
+
+    if not periodo:
+        raise HTTPException(
+            status_code=404,
+            detail="Periodo no encontrado"
+        )
+
+    return periodo
+
 @router.post(
     "/",
     response_model=PeriodoResponse
@@ -47,3 +69,42 @@ def crear_periodo(
         db,
         periodo
     )
+
+@router.patch(
+    "/{periodo_id}",
+    response_model=PeriodoResponse
+)
+def actualizar_periodo(
+    periodo_id: int,
+    periodo: PeriodoUpdate,
+    db: Session = Depends(get_db)
+):
+    periodo_actualizado = update_periodo(
+        db,
+        periodo_id,
+        periodo
+    )
+
+    if not periodo_actualizado:
+        raise HTTPException(
+            status_code=404,
+            detail="Periodo no encontrado"
+        )
+
+    return periodo_actualizado
+
+@router.delete(
+    "/{periodo_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def eliminar_periodo(
+    periodo_id: int,
+    db: Session = Depends(get_db)
+):
+    eliminado = delete_periodo(db, periodo_id)
+
+    if not eliminado:
+        raise HTTPException(
+            status_code=404,
+            detail="Periodo no encontrado"
+        )

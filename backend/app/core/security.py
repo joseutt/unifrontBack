@@ -6,7 +6,7 @@ from datetime import (
 
 from jose import jwt, JWTError
 
-from passlib.context import CryptContext
+import bcrypt
 
 from fastapi import (
     Depends,
@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
 
+from app.models import init as _models_init
 from app.models.usuario import Usuario
 
 from app.core.config import (
@@ -30,31 +31,30 @@ from app.core.config import (
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 
-# PASSWORD HASH
-
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
-
 def hash_password(password: str):
 
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(
+        password.encode("utf-8"),
+        bcrypt.gensalt()
+    ).decode("utf-8")
 
 def verify_password(
     plain_password,
     hashed_password
 ):
 
-    return pwd_context.verify(
-        plain_password,
-        hashed_password
-    )
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"),
+            hashed_password.encode("utf-8")
+        )
+    except (TypeError, ValueError):
+        return False
 
 # OAUTH2
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="auth/login"
+    tokenUrl="/auth/login"
 )
 
 # DATABASE

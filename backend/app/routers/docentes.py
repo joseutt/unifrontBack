@@ -1,23 +1,27 @@
 from fastapi import (
     APIRouter,
-    Depends
+    Depends,
+    HTTPException,
+    status
 )
 
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 
 from app.schemas.docente import (
     DocenteCreate,
-    DocenteResponse
+    DocenteResponse,
+    DocenteUpdate
 )
 
 from app.crud.crud_docente import (
     get_docentes,
-    create_docente
+    get_docente,
+    create_docente,
+    update_docente,
+    delete_docente
 )
-
-from app.database import get_db
 
 router = APIRouter(
     prefix="/docentes",
@@ -35,6 +39,24 @@ def listar_docentes(
 ):
     return get_docentes(db)
 
+@router.get(
+    "/{docente_id}",
+    response_model=DocenteResponse
+)
+def obtener_docente(
+    docente_id: int,
+    db: Session = Depends(get_db)
+):
+    docente = get_docente(db, docente_id)
+
+    if not docente:
+        raise HTTPException(
+            status_code=404,
+            detail="Docente no encontrado"
+        )
+
+    return docente
+
 @router.post(
     "/",
     response_model=DocenteResponse
@@ -47,3 +69,42 @@ def crear_docente(
         db,
         docente
     )
+
+@router.patch(
+    "/{docente_id}",
+    response_model=DocenteResponse
+)
+def actualizar_docente(
+    docente_id: int,
+    docente: DocenteUpdate,
+    db: Session = Depends(get_db)
+):
+    docente_actualizado = update_docente(
+        db,
+        docente_id,
+        docente
+    )
+
+    if not docente_actualizado:
+        raise HTTPException(
+            status_code=404,
+            detail="Docente no encontrado"
+        )
+
+    return docente_actualizado
+
+@router.delete(
+    "/{docente_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def eliminar_docente(
+    docente_id: int,
+    db: Session = Depends(get_db)
+):
+    eliminado = delete_docente(db, docente_id)
+
+    if not eliminado:
+        raise HTTPException(
+            status_code=404,
+            detail="Docente no encontrado"
+        )

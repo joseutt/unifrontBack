@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class CarreraBase(BaseModel):
     clave: str
@@ -8,6 +9,13 @@ class CarreraBase(BaseModel):
 
 class CarreraCreate(CarreraBase):
     pass
+
+class CarreraUpdate(BaseModel):
+    clave: Optional[str] = None
+    nombre: Optional[str] = None
+    nivel: Optional[str] = None
+    duracion_cuatrimestres: Optional[int] = None
+    estado: Optional[bool] = None
 
 class CarreraResponse(CarreraBase):
     id_carrera: int

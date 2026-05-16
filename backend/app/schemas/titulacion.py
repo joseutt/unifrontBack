@@ -30,6 +30,20 @@ class TitulacionBase(BaseModel):
 class TitulacionCreate(TitulacionBase):
     pass
 
+class TitulacionUpdate(BaseModel):
+    id_alumno: Optional[int] = None
+    modalidad: Optional[str] = None
+    cumple_promedio: Optional[bool] = None
+    servicio_social_liberado: Optional[bool] = None
+    practicas_liberadas: Optional[bool] = None
+    certificado_emitido: Optional[bool] = None
+    pagos_titulacion_completos: Optional[bool] = None
+    numero_autorizacion: Optional[str] = None
+    acta_examen: Optional[str] = None
+    titulo_emitido: Optional[bool] = None
+    fecha_titulacion: Optional[date] = None
+    observaciones: Optional[str] = None
+
 class TitulacionResponse(TitulacionBase):
     id_titulacion: int
 

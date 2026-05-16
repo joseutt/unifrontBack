@@ -1,16 +1,11 @@
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException
+    HTTPException,
+    status
 )
 
 from sqlalchemy.orm import Session
-
-from app.core.security import (
-    get_current_user
-)
-
-from app.database import SessionLocal
 
 from app.schemas.alumno import (
     AlumnoCreate,
@@ -20,9 +15,10 @@ from app.schemas.alumno import (
 
 from app.crud.crud_alumno import (
     get_alumnos,
-    get_alumno_by_id,
+    get_alumno,
     create_alumno,
-    update_alumno
+    update_alumno,
+    delete_alumno
 )
 
 from app.database import get_db
@@ -54,7 +50,7 @@ def obtener_alumno(
     db: Session = Depends(get_db)
 ):
 
-    alumno = get_alumno_by_id(
+    alumno = get_alumno(
         db,
         alumno_id
     )
@@ -105,3 +101,24 @@ def actualizar_alumno(
         )
 
     return alumno_actualizado
+
+
+@router.delete(
+    "/{alumno_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def eliminar_alumno(
+    alumno_id: int,
+    db: Session = Depends(get_db)
+):
+
+    eliminado = delete_alumno(
+        db,
+        alumno_id
+    )
+
+    if not eliminado:
+        raise HTTPException(
+            status_code=404,
+            detail="Alumno no encontrado"
+        )
