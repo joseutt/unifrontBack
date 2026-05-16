@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: universidad_db
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: universidad
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin123
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build: ./backend
+    container_name: universidad_api
+
+    restart: always
+
+    depends_on:
+      - db
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./backend:/app
+
+    environment:
+      DATABASE_URL: mysql+pymysql://admin:admin123@db/universidad
+
+volumes:
+  mysql_data:
