@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: mysql:8.0
+
+    container_name: universidad_db
+
+    restart: always
+
+    env_file:
+      - .env
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+
+    build: ./backend
+
+    container_name: universidad_api
+
+    restart: always
+
+    depends_on:
+      - db
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./backend:/app
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+
+volumes:
+  mysql_data:
