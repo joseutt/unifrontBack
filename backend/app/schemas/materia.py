@@ -21,3 +21,12 @@ class MateriaResponse(MateriaBase):
 
     class Config:
         from_attributes = True
+
+class MateriaSimple(BaseModel):
+    id_materia: int
+    clave: str | None = None
+    nombre: str
+    creditos: float
+
+    class Config:
+        from_attributes = True

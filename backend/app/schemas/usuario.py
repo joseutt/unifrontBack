@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
+from app.schemas.rol import RolResponse
 
 class UsuarioBase(BaseModel):
     nombre: str
@@ -8,6 +9,7 @@ class UsuarioBase(BaseModel):
     apellido_materno: Optional[str] = None
     correo: EmailStr
     telefono: Optional[str] = None
+    roles: List[str]
 
 class UsuarioCreate(UsuarioBase):
     password: str
@@ -23,8 +25,7 @@ class UsuarioUpdate(BaseModel):
 
 class UsuarioResponse(UsuarioBase):
     id_usuario: int
-    estado: str
-    fecha_creacion: datetime
+    roles: List[RolResponse]
 
     class Config:
         from_attributes = True

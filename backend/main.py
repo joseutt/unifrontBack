@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.models import init as _models_init
+
 from app.routers import (
     usuarios,
     carreras,
@@ -13,11 +16,24 @@ from app.routers import (
     titulaciones,
     roles,
     auth,
-    documentos
+    documentos,
+    plan_estudio
 )
 
 app = FastAPI(
-    title="Unifront API", version="1.0.0"
+    title="Unifront API",
+    version="1.0.0"
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/")
@@ -38,3 +54,4 @@ app.include_router(titulaciones.router)
 # app.include_router(roles.router)
 app.include_router(auth.router)
 app.include_router(documentos.router)
+app.include_router(plan_estudio.router)
