@@ -654,26 +654,22 @@ INSERT INTO carreras (
 INSERT INTO planes_estudio (
     id_carrera,
     nombre_plan,
-    fecha_inicio,
-    vigente
+    fecha_inicio
 ) VALUES
 (
     1,
     'Plan 2014 Criminología',
-    '01-01-2014',
-    TRUE
+    '2014-01-01'
 ),
 (
     2,
     'Plan 2014 Gastronomía',
-    '01-01-2014',
-    TRUE
+    '2014-01-01'
 ),
 (
     3,
     'Plan 2017 Nutrición',
-    '01-01-2017',
-    TRUE
+    '2017-01-01'
 );
 
 -- =========================================================
@@ -761,8 +757,8 @@ INSERT INTO periodos (
     estado
 ) VALUES (
     'Enero - Abril 2026',
-    '05-01-2026',
-    '30-04-2026',
+    '2026-01-01',
+    '2026-04-30',
     'ACTIVO'
 );
 
@@ -819,7 +815,7 @@ INSERT INTO docentes (
     'DOC-001',
     'Criminología',
     'Doctorado',
-    '10-01-2020',
+    '2020-01-10',
     TRUE
 );
 
