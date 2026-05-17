@@ -23,3 +23,10 @@ class CarreraResponse(CarreraBase):
 
     class Config:
         from_attributes = True
+
+class CarreraSimple(BaseModel):
+    id_carrera: int
+    nombre: str
+
+    class Config:
+        from_attributes = True
