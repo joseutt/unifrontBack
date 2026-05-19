@@ -1,27 +1,19 @@
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    status
-)
+from typing import Optional
 
-from app.database import get_db
-
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.schemas.calificacion import (
-    CalificacionCreate,
-    CalificacionResponse,
-    CalificacionUpdate
-)
-
 from app.crud.crud_calificacion import (
-    get_calificaciones,
-    get_calificacion,
     create_calificacion,
-    update_calificacion,
-    delete_calificacion
+    delete_calificacion,
+    get_calificacion,
+    update_calificacion
 )
+from app.crud.crud_detalles import get_calificaciones_detalle
+from app.database import get_db
+from app.schemas.calificacion import CalificacionCreate, CalificacionUpdate
+from app.schemas.detalles import CalificacionDetalleResponse
+
 
 router = APIRouter(
     prefix="/calificaciones",
@@ -29,25 +21,43 @@ router = APIRouter(
 )
 
 
-
 @router.get(
     "/",
-    response_model=list[CalificacionResponse]
+    response_model=list[CalificacionDetalleResponse]
 )
 def listar_calificaciones(
+    alumno_id: Optional[int] = None,
+    materia_id: Optional[int] = None,
+    grupo_id: Optional[int] = None,
+    periodo_id: Optional[int] = None,
+    parcial_id: Optional[int] = None,
     db: Session = Depends(get_db)
 ):
-    return get_calificaciones(db)
+    return get_calificaciones_detalle(
+        db,
+        alumno_id=alumno_id,
+        materia_id=materia_id,
+        grupo_id=grupo_id,
+        periodo_id=periodo_id,
+        parcial_id=parcial_id
+    )
+
 
 @router.get(
     "/{calificacion_id}",
-    response_model=CalificacionResponse
+    response_model=CalificacionDetalleResponse
 )
 def obtener_calificacion(
     calificacion_id: int,
     db: Session = Depends(get_db)
 ):
-    calificacion = get_calificacion(db, calificacion_id)
+    calificacion = next(
+        (
+            item for item in get_calificaciones_detalle(db)
+            if item["id_calificacion"] == calificacion_id
+        ),
+        None
+    )
 
     if not calificacion:
         raise HTTPException(
@@ -57,22 +67,26 @@ def obtener_calificacion(
 
     return calificacion
 
+
 @router.post(
     "/",
-    response_model=CalificacionResponse
+    response_model=CalificacionDetalleResponse
 )
 def crear_calificacion(
     calificacion: CalificacionCreate,
     db: Session = Depends(get_db)
 ):
-    return create_calificacion(
-        db,
-        calificacion
+    nueva_calificacion = create_calificacion(db, calificacion)
+
+    return next(
+        item for item in get_calificaciones_detalle(db)
+        if item["id_calificacion"] == nueva_calificacion.id_calificacion
     )
+
 
 @router.patch(
     "/{calificacion_id}",
-    response_model=CalificacionResponse
+    response_model=CalificacionDetalleResponse
 )
 def actualizar_calificacion(
     calificacion_id: int,
@@ -91,7 +105,11 @@ def actualizar_calificacion(
             detail="Calificacion no encontrada"
         )
 
-    return calificacion_actualizada
+    return next(
+        item for item in get_calificaciones_detalle(db)
+        if item["id_calificacion"] == calificacion_id
+    )
+
 
 @router.delete(
     "/{calificacion_id}",
@@ -101,10 +119,10 @@ def eliminar_calificacion(
     calificacion_id: int,
     db: Session = Depends(get_db)
 ):
-    eliminada = delete_calificacion(db, calificacion_id)
-
-    if not eliminada:
+    if not get_calificacion(db, calificacion_id):
         raise HTTPException(
             status_code=404,
             detail="Calificacion no encontrada"
         )
+
+    delete_calificacion(db, calificacion_id)

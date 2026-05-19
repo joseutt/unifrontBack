@@ -1,17 +1,28 @@
 def articulo_alumno(sexo: str):
-    return "la alumna" if sexo == "M" else "el alumno"
+    sexo = (sexo or "M").upper()
+
+    return "el alumno" if sexo == "M" else "la alumna"
 
 
 def pronombre(sexo: str):
-    return "ella" if sexo == "M" else "él"
+    sexo = (sexo or "M").upper()
+
+    return "el" if sexo == "M" else "ella"
 
 
 def inscrito(sexo: str):
-    return "inscrita" if sexo == "M" else "inscrito"
+    sexo = (sexo or "M").upper()
+
+    return "inscrito" if sexo == "M" else "inscrita"
 
 
 def egresado(sexo: str):
-    return "egresada" if sexo == "M" else "egresado"
+    sexo = (sexo or "M").upper()
+
+    return "egresado" if sexo == "M" else "egresada"
+
 
 def interesado(sexo: str):
-    return "interesada" if sexo == "M" else "interesado"
+    sexo = (sexo or "M").upper()
+
+    return "interesado" if sexo == "M" else "interesada"

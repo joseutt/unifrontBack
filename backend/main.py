@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -40,9 +42,17 @@ from app.routers import (
     plan_estudio
 )
 
+BASE_DIR = Path(__file__).resolve().parent
+
 app = FastAPI(
     title="Unifront API",
     version="1.0.0"
+)
+
+app.mount(
+    "/static",
+    StaticFiles(directory=str(BASE_DIR / "app" / "static")),
+    name="static"
 )
 
 # CORS
