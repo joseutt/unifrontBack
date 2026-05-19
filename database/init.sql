@@ -939,3 +939,396 @@ INSERT INTO carga_academica (
     'CURSANDO',
     CURDATE()
 );
+
+-- =========================================================
+-- USUARIO DE CONTROL ESCOLAR
+-- Password: Admin123*
+-- =========================================================
+
+INSERT INTO usuarios (
+    nombre,
+    apellido_paterno,
+    apellido_materno,
+    correo,
+    password,
+    telefono,
+    estado
+) VALUES (
+    'Laura',
+    'Hernandez',
+    'Mendoza',
+    'control.escolar@unifront.com',
+    '$2b$12$fDyZK5l1./1TY19rgskvc.lVaerFgt3eIjBN3JVUl2guZ1i0V64Ii',
+    '6862223344',
+    'ACTIVO'
+);
+
+INSERT INTO usuario_roles (id_usuario, id_rol)
+VALUES (4, 2);
+
+-- =========================================================
+-- PROCEDENCIA ACADEMICA DEL ALUMNO
+-- =========================================================
+
+INSERT INTO procedencia_academica (
+    id_alumno,
+    escuela_procedencia,
+    nivel_academico,
+    estado_procedencia,
+    promedio_general,
+    fecha_egreso
+) VALUES (
+    1,
+    'Colegio de Bachilleres Plantel Mexicali',
+    'BACHILLERATO',
+    'Baja California',
+    88.50,
+    '2025-07-15'
+);
+
+-- =========================================================
+-- TUTOR Y RELACION CON ALUMNO
+-- =========================================================
+
+INSERT INTO tutores (
+    nombre,
+    parentesco,
+    telefono,
+    correo,
+    ocupacion
+) VALUES (
+    'Maria Gomez Torres',
+    'Madre',
+    '6861112233',
+    'maria.gomez@example.com',
+    'Comerciante'
+);
+
+INSERT INTO alumno_tutor (
+    id_alumno,
+    id_tutor
+) VALUES (
+    1,
+    1
+);
+
+-- =========================================================
+-- CONTACTOS DE EMERGENCIA
+-- =========================================================
+
+INSERT INTO contactos_emergencia (
+    id_alumno,
+    nombre,
+    parentesco,
+    telefono,
+    correo,
+    direccion,
+    contacto_principal
+) VALUES
+(
+    1,
+    'Maria Gomez Torres',
+    'Madre',
+    '6861112233',
+    'maria.gomez@example.com',
+    'Colonia Centro, Mexicali, Baja California',
+    TRUE
+),
+(
+    1,
+    'Roberto Perez Ruiz',
+    'Padre',
+    '6864445566',
+    'roberto.perez@example.com',
+    'Colonia Nueva, Mexicali, Baja California',
+    FALSE
+);
+
+-- =========================================================
+-- SEGURO MEDICO
+-- =========================================================
+
+INSERT INTO seguros_medicos (
+    id_alumno,
+    tiene_seguro,
+    institucion,
+    numero_poliza
+) VALUES (
+    1,
+    TRUE,
+    'IMSS',
+    'IMSS-2026-0001'
+);
+
+-- =========================================================
+-- RECEPCION DE DOCUMENTOS
+-- =========================================================
+
+INSERT INTO recepcion_documentos (
+    id_alumno,
+    ficha_inscripcion,
+    acta_original,
+    acta_copias,
+    certificado_original,
+    constancia_terminacion,
+    fotografias,
+    curp_documento,
+    fecha_recepcion,
+    recibido_por,
+    observaciones
+) VALUES (
+    1,
+    TRUE,
+    TRUE,
+    TRUE,
+    TRUE,
+    TRUE,
+    TRUE,
+    TRUE,
+    '2026-01-05',
+    4,
+    'Expediente inicial completo y validado por control escolar.'
+);
+
+-- =========================================================
+-- DOCUMENTOS DEL ALUMNO
+-- =========================================================
+
+INSERT INTO documentos_alumno (
+    id_alumno,
+    id_tipo_documento,
+    nombre_archivo,
+    ruta_archivo,
+    validado,
+    observaciones
+) VALUES
+(
+    1,
+    1,
+    'acta_nacimiento_20260001.pdf',
+    '/documentos/alumnos/20260001/acta_nacimiento_20260001.pdf',
+    TRUE,
+    'Documento legible.'
+),
+(
+    1,
+    2,
+    'curp_20260001.pdf',
+    '/documentos/alumnos/20260001/curp_20260001.pdf',
+    TRUE,
+    'CURP coincide con el registro del alumno.'
+),
+(
+    1,
+    3,
+    'certificado_bachillerato_20260001.pdf',
+    '/documentos/alumnos/20260001/certificado_bachillerato_20260001.pdf',
+    TRUE,
+    'Certificado de bachillerato recibido.'
+);
+
+-- =========================================================
+-- CALIFICACIONES
+-- =========================================================
+
+INSERT INTO calificaciones (
+    id_carga,
+    id_parcial,
+    calificacion,
+    capturado_por
+) VALUES
+(
+    1,
+    1,
+    92.00,
+    2
+),
+(
+    1,
+    2,
+    88.00,
+    2
+),
+(
+    1,
+    3,
+    90.00,
+    2
+);
+
+-- =========================================================
+-- ASISTENCIAS
+-- =========================================================
+
+INSERT INTO asistencias (
+    id_carga,
+    fecha,
+    asistencia
+) VALUES
+(
+    1,
+    '2026-01-12',
+    TRUE
+),
+(
+    1,
+    '2026-01-13',
+    TRUE
+),
+(
+    1,
+    '2026-01-14',
+    FALSE
+),
+(
+    1,
+    '2026-01-15',
+    TRUE
+);
+
+-- =========================================================
+-- HISTORIAL ACADEMICO
+-- =========================================================
+
+INSERT INTO historial_academico (
+    id_alumno,
+    id_materia,
+    id_periodo,
+    tipo_evaluacion,
+    oportunidad,
+    calificacion_final,
+    resultado,
+    fecha_cierre
+) VALUES (
+    1,
+    1,
+    1,
+    'ORDINARIO',
+    1,
+    90.00,
+    'APROBADO',
+    '2026-04-30'
+);
+
+-- =========================================================
+-- EXTRAORDINARIOS
+-- =========================================================
+
+INSERT INTO extraordinarios (
+    id_alumno,
+    id_materia,
+    intento,
+    fecha_examen,
+    calificacion,
+    estatus,
+    observaciones
+) VALUES (
+    1,
+    8,
+    2,
+    '2026-05-10',
+    76.00,
+    'APROBADO',
+    'Acreditado en segunda oportunidad.'
+);
+
+-- =========================================================
+-- EMPRESAS
+-- =========================================================
+
+INSERT INTO empresas (
+    nombre,
+    direccion,
+    telefono,
+    correo
+) VALUES
+(
+    'Centro Comunitario Mexicali',
+    'Av. Reforma 1200, Mexicali, Baja California',
+    '6865550101',
+    'contacto@centrocomunitariomxl.org'
+),
+(
+    'Consultoria Integral del Noroeste',
+    'Blvd. Benito Juarez 450, Mexicali, Baja California',
+    '6865550202',
+    'rh@consultorianoroeste.com'
+);
+
+-- =========================================================
+-- SERVICIO SOCIAL
+-- =========================================================
+
+INSERT INTO servicio_social (
+    id_alumno,
+    id_empresa,
+    horas_requeridas,
+    horas_completadas,
+    fecha_inicio,
+    fecha_fin,
+    estado
+) VALUES (
+    1,
+    1,
+    480,
+    120,
+    '2026-02-01',
+    NULL,
+    'EN_PROCESO'
+);
+
+-- =========================================================
+-- PRACTICAS PROFESIONALES
+-- =========================================================
+
+INSERT INTO practicas_profesionales (
+    id_alumno,
+    id_empresa,
+    proyecto,
+    asesor_empresa,
+    asesor_universidad,
+    fecha_inicio,
+    fecha_fin,
+    estado
+) VALUES (
+    1,
+    2,
+    'Diagnostico de factores de riesgo comunitario',
+    'Ana Torres Salgado',
+    'Carlos Ramirez Lopez',
+    '2026-03-01',
+    NULL,
+    'EN_PROCESO'
+);
+
+-- =========================================================
+-- TITULACION
+-- =========================================================
+
+INSERT INTO titulacion (
+    id_alumno,
+    modalidad,
+    cumple_promedio,
+    servicio_social_liberado,
+    practicas_liberadas,
+    certificado_emitido,
+    pagos_titulacion_completos,
+    numero_autorizacion,
+    acta_examen,
+    titulo_emitido,
+    fecha_titulacion,
+    observaciones
+) VALUES (
+    1,
+    'TESIS',
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    NULL,
+    NULL,
+    FALSE,
+    NULL,
+    'Registro preliminar de proceso de titulacion.'
+);
