@@ -795,7 +795,7 @@ INSERT INTO usuarios (
     'Ramirez',
     'Lopez',
     'docente@unifront.com',
-    '$2b$12$Q9mJzQ6hKJQ4m6Qk0xN1QeT8Qm9m1H8lQ0WfQJxP6i1Wkz7Y2F6eS',
+    '$2b$12$fDyZK5l1./1TY19rgskvc.lVaerFgt3eIjBN3JVUl2guZ1i0V64Ii',
     '6865554444',
     'ACTIVO'
 );
@@ -856,7 +856,7 @@ INSERT INTO usuarios (
     'Perez',
     'Gomez',
     'alumno@unifront.com',
-    '$2b$12$Q9mJzQ6hKJQ4m6Qk0xN1QeT8Qm9m1H8lQ0WfQJxP6i1Wkz7Y2F6eS',
+    '$2b$12$fDyZK5l1./1TY19rgskvc.lVaerFgt3eIjBN3JVUl2guZ1i0V64Ii',
     '6869998888',
     'ACTIVO'
 );
