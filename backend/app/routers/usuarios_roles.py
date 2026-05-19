@@ -4,10 +4,11 @@ from sqlalchemy.orm import Session
 from app.crud.crud_usuario_rol import (
     create_usuario_rol,
     delete_usuario_rol,
-    get_usuario_rol,
-    get_usuarios_roles
+    get_usuario_rol
 )
+from app.crud.crud_detalles import get_usuarios_roles_detalle
 from app.database import get_db
+from app.schemas.detalles import UsuarioRolDetalleResponse
 from app.schemas.usuario_rol import UsuarioRolCreate, UsuarioRolResponse
 
 
@@ -19,12 +20,12 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[UsuarioRolResponse]
+    response_model=list[UsuarioRolDetalleResponse]
 )
 def listar_usuarios_roles(
     db: Session = Depends(get_db)
 ):
-    return get_usuarios_roles(db)
+    return get_usuarios_roles_detalle(db)
 
 
 @router.get(
