@@ -15,6 +15,7 @@ from app.crud.crud_usuario import (
     update_usuario,
     delete_usuario
 )
+from app.crud.crud_usuario_expediente import get_usuario_expediente
 
 router = APIRouter(
     prefix="/usuarios",
@@ -47,6 +48,24 @@ def obtener_usuario(
         )
 
     return usuario
+
+
+@router.get(
+    "/{usuario_id}/expediente"
+)
+def obtener_usuario_con_expediente(
+    usuario_id: int,
+    db: Session = Depends(get_db)
+):
+    expediente = get_usuario_expediente(db, usuario_id)
+
+    if not expediente:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )
+
+    return expediente
 
 @router.post(
     "/",
