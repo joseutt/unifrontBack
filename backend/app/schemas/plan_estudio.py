@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date
 from typing import Optional, List
 from .carrera import CarreraSimple
@@ -6,6 +6,7 @@ from .materia import MateriaSimple
 
 from app.schemas.plan_materia import (
     PlanMateriaCreate,
+    PlanMateriaUpsert,
     PlanMateriaResponse
 )
 
@@ -33,19 +34,21 @@ class PlanEstudioBase(BaseModel):
 
 
 class PlanEstudioCreate(PlanEstudioBase):
-    materias: List[PlanMateriaCreate] = []
+    materias: List[PlanMateriaCreate] = Field(default_factory=list)
 
 
 class PlanEstudioUpdate(BaseModel):
+    id_carrera: Optional[int] = None
     nombre_plan: Optional[str] = None
     fecha_inicio: Optional[date] = None
     fecha_fin: Optional[date] = None
     vigente: Optional[bool] = None
+    materias: Optional[List[PlanMateriaUpsert]] = None
 
 
 class PlanEstudioResponse(PlanEstudioBase):
     id_plan: int
-    materias: List[PlanMateriaResponse] = []
+    materias: List[PlanMateriaResponse] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

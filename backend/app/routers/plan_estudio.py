@@ -1,7 +1,8 @@
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException
+    HTTPException,
+    status
 )
 from app.crud.crud_plan_estudio import transformar_plan
 from sqlalchemy.orm import Session
@@ -14,19 +15,34 @@ from app.schemas.plan_estudio import (
     PlanEstudioResponse,
     PlanEstudioUpdate
 )
+from app.schemas.plan_materia import (
+    PlanMateriaCreate,
+    PlanMateriaResponse,
+    PlanMateriaUpdate
+)
 
 from app.crud.crud_plan_estudio import (
+    agregar_materia_a_plan,
+    actualizar_materia_de_plan,
     crear_plan_estudio,
-    obtener_planes,
-    obtener_plan_por_id,
     actualizar_plan,
-    eliminar_plan
+    eliminar_materia_de_plan,
+    eliminar_plan,
+    obtener_planes,
+    obtener_plan_por_id
 )
 
 router = APIRouter(
     prefix="/planes-estudio",
     tags=["Planes de Estudio"]
 )
+
+
+def _bad_request(error: ValueError):
+    raise HTTPException(
+        status_code=400,
+        detail=str(error)
+    )
 
 
 @router.post(
@@ -37,7 +53,10 @@ def crear(
     plan: PlanEstudioCreate,
     db: Session = Depends(get_db)
 ):
-    return crear_plan_estudio(db, plan)
+    try:
+        return crear_plan_estudio(db, plan)
+    except ValueError as error:
+        _bad_request(error)
 
 
 @router.get("/")
@@ -68,6 +87,10 @@ def obtener(
     return transformar_plan(plan)
 
 
+@router.patch(
+    "/{id_plan}",
+    response_model=PlanEstudioResponse
+)
 @router.put(
     "/{id_plan}",
     response_model=PlanEstudioResponse
@@ -77,11 +100,14 @@ def actualizar(
     datos: PlanEstudioUpdate,
     db: Session = Depends(get_db)
 ):
-    plan = actualizar_plan(
-        db,
-        id_plan,
-        datos
-    )
+    try:
+        plan = actualizar_plan(
+            db,
+            id_plan,
+            datos
+        )
+    except ValueError as error:
+        _bad_request(error)
 
     if not plan:
         raise HTTPException(
@@ -90,6 +116,84 @@ def actualizar(
         )
 
     return plan
+
+
+@router.post(
+    "/{id_plan}/materias",
+    response_model=PlanMateriaResponse
+)
+def agregar_materia(
+    id_plan: int,
+    materia: PlanMateriaCreate,
+    db: Session = Depends(get_db)
+):
+    try:
+        materia_plan = agregar_materia_a_plan(
+            db,
+            id_plan,
+            materia
+        )
+    except ValueError as error:
+        _bad_request(error)
+
+    if not materia_plan:
+        raise HTTPException(
+            status_code=404,
+            detail="Plan de estudio no encontrado"
+        )
+
+    return materia_plan
+
+
+@router.patch(
+    "/{id_plan}/materias/{id_plan_materia}",
+    response_model=PlanMateriaResponse
+)
+def actualizar_materia(
+    id_plan: int,
+    id_plan_materia: int,
+    materia: PlanMateriaUpdate,
+    db: Session = Depends(get_db)
+):
+    try:
+        materia_plan = actualizar_materia_de_plan(
+            db,
+            id_plan,
+            id_plan_materia,
+            materia
+        )
+    except ValueError as error:
+        _bad_request(error)
+
+    if not materia_plan:
+        raise HTTPException(
+            status_code=404,
+            detail="Materia del plan no encontrada"
+        )
+
+    return materia_plan
+
+
+@router.delete(
+    "/{id_plan}/materias/{id_plan_materia}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def eliminar_materia(
+    id_plan: int,
+    id_plan_materia: int,
+    db: Session = Depends(get_db)
+):
+    eliminada = eliminar_materia_de_plan(
+        db,
+        id_plan,
+        id_plan_materia
+    )
+
+    if not eliminada:
+        raise HTTPException(
+            status_code=404,
+            detail="Materia del plan no encontrada"
+        )
 
 
 @router.delete(

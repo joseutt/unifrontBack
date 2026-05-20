@@ -47,5 +47,5 @@ class PlanEstudio(Base):
     materias = relationship(
         "PlanMateria",
         back_populates="plan",
-        cascade="all, delete"
+        cascade="all, delete-orphan"
     )
