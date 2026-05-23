@@ -430,12 +430,17 @@ CREATE TABLE historial_academico (
 CREATE TABLE asistencias (
     id_asistencia BIGINT PRIMARY KEY AUTO_INCREMENT,
     id_carga BIGINT,
+    id_parcial INT,
     fecha DATE,
     asistencia BOOLEAN,
 
     CONSTRAINT fk_asistencia_carga
         FOREIGN KEY (id_carga)
-        REFERENCES carga_academica(id_carga)
+        REFERENCES carga_academica(id_carga),
+
+    CONSTRAINT fk_asistencia_parcial
+        FOREIGN KEY (id_parcial)
+        REFERENCES parciales(id_parcial)
 ) ENGINE=InnoDB;
 
 CREATE TABLE tipos_documento (
@@ -556,6 +561,9 @@ ON calificaciones(id_carga);
 
 CREATE INDEX idx_asistencia_carga
 ON asistencias(id_carga);
+
+CREATE INDEX idx_asistencia_parcial
+ON asistencias(id_parcial);
 
 CREATE INDEX idx_usuario_correo
 ON usuarios(correo);
@@ -820,10 +828,14 @@ INSERT INTO docentes (
 );
 
 -- =========================================================
--- GRUPO - MATERIA
+-- GRUPO - MATERIA BASE
+-- Logica: el docente 1 se usa como docente de prueba y, por ahora,
+-- solo debe tener una materia asignada para validar que las pantallas
+-- de calificaciones y asistencia filtren por el docente autenticado.
 -- =========================================================
 
 INSERT INTO grupos_materias (
+    id_grupo_materia,
     id_grupo,
     id_materia,
     id_docente,
@@ -831,6 +843,7 @@ INSERT INTO grupos_materias (
     aula,
     cupo_maximo
 ) VALUES (
+    1,
     1,
     6,
     1,
@@ -1162,25 +1175,30 @@ INSERT INTO calificaciones (
 
 INSERT INTO asistencias (
     id_carga,
+    id_parcial,
     fecha,
     asistencia
 ) VALUES
 (
+    1,
     1,
     '2026-01-12',
     TRUE
 ),
 (
     1,
+    1,
     '2026-01-13',
     TRUE
 ),
 (
     1,
+    1,
     '2026-01-14',
     FALSE
 ),
 (
+    1,
     1,
     '2026-01-15',
     TRUE
@@ -1332,3 +1350,647 @@ INSERT INTO titulacion (
     NULL,
     'Registro preliminar de proceso de titulacion.'
 );
+
+-- =========================================================
+-- DATOS COMPLEMENTARIOS PARA PRUEBAS
+-- Minimo 10 registros por tabla.
+-- Password para usuarios agregados: Admin123*
+-- =========================================================
+
+SET @demo_password = '$2b$12$fDyZK5l1./1TY19rgskvc.lVaerFgt3eIjBN3JVUl2guZ1i0V64Ii';
+
+-- =========================================================
+-- CARRERAS COMPLEMENTARIAS
+-- =========================================================
+
+INSERT INTO carreras (
+    id_carrera,
+    clave,
+    nombre,
+    nivel,
+    duracion_cuatrimestres,
+    estado
+) VALUES
+(4, 'RVOE-BC-ING01/22', 'Ingenieria en Sistemas Computacionales', 'INGENIERIA', 10, TRUE),
+(5, 'RVOE-BC-LADM/21', 'Licenciatura en Administracion', 'LICENCIATURA', 9, TRUE),
+(6, 'RVOE-BC-LDER/21', 'Licenciatura en Derecho', 'LICENCIATURA', 9, TRUE),
+(7, 'RVOE-BC-LPSI/20', 'Licenciatura en Psicologia', 'LICENCIATURA', 9, TRUE),
+(8, 'RVOE-BC-LENF/20', 'Licenciatura en Enfermeria', 'LICENCIATURA', 9, TRUE),
+(9, 'RVOE-BC-MEDU/24', 'Maestria en Educacion', 'MAESTRIA', 6, TRUE),
+(10, 'RVOE-BC-TSUDS/25', 'TSU en Desarrollo de Software', 'TSU', 6, TRUE);
+
+-- =========================================================
+-- PLANES DE ESTUDIO COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO planes_estudio (
+    id_plan,
+    id_carrera,
+    nombre_plan,
+    fecha_inicio,
+    fecha_fin,
+    vigente
+) VALUES
+(4, 4, 'Plan 2022 Sistemas Computacionales', '2022-01-01', NULL, TRUE),
+(5, 5, 'Plan 2021 Administracion', '2021-01-01', NULL, TRUE),
+(6, 6, 'Plan 2021 Derecho', '2021-01-01', NULL, TRUE),
+(7, 7, 'Plan 2020 Psicologia', '2020-01-01', NULL, TRUE),
+(8, 8, 'Plan 2020 Enfermeria', '2020-01-01', NULL, TRUE),
+(9, 9, 'Plan 2024 Maestria en Educacion', '2024-01-01', NULL, TRUE),
+(10, 10, 'Plan 2025 Desarrollo de Software', '2025-01-01', NULL, TRUE);
+
+-- =========================================================
+-- PRERREQUISITOS COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO materias_prerrequisito (
+    id_materia,
+    id_materia_requerida,
+    tipo
+) VALUES
+(6, 1, 'RECOMENDADO'),
+(8, 5, 'OBLIGATORIO'),
+(9, 6, 'RECOMENDADO'),
+(10, 1, 'OBLIGATORIO'),
+(4, 3, 'RECOMENDADO'),
+(5, 2, 'RECOMENDADO'),
+(3, 1, 'OBLIGATORIO'),
+(2, 1, 'RECOMENDADO'),
+(10, 7, 'RECOMENDADO');
+
+-- =========================================================
+-- PERIODOS COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO periodos (
+    id_periodo,
+    nombre,
+    fecha_inicio,
+    fecha_fin,
+    estado
+) VALUES
+(2, 'Mayo - Agosto 2026', '2026-05-01', '2026-08-31', 'ACTIVO'),
+(3, 'Septiembre - Diciembre 2026', '2026-09-01', '2026-12-20', 'CERRADO'),
+(4, 'Enero - Abril 2025', '2025-01-01', '2025-04-30', 'CERRADO'),
+(5, 'Mayo - Agosto 2025', '2025-05-01', '2025-08-31', 'CERRADO'),
+(6, 'Septiembre - Diciembre 2025', '2025-09-01', '2025-12-20', 'CERRADO'),
+(7, 'Enero - Abril 2024', '2024-01-01', '2024-04-30', 'CERRADO'),
+(8, 'Mayo - Agosto 2024', '2024-05-01', '2024-08-31', 'CERRADO'),
+(9, 'Septiembre - Diciembre 2024', '2024-09-01', '2024-12-20', 'CERRADO'),
+(10, 'Enero - Abril 2027', '2027-01-01', '2027-04-30', 'CERRADO');
+
+-- =========================================================
+-- GRUPOS COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO grupos (
+    id_grupo,
+    nombre,
+    id_carrera,
+    id_cuatrimestre,
+    turno
+) VALUES
+(2, 'CRIM28', 1, 1, 'VESPERTINO'),
+(3, 'CRIM29', 1, 2, 'MATUTINO'),
+(4, 'CRIM30', 1, 2, 'VESPERTINO'),
+(5, 'CRIM31', 1, 3, 'MATUTINO'),
+(6, 'CRIM32', 1, 3, 'VESPERTINO'),
+(7, 'CRIM33', 1, 4, 'MATUTINO'),
+(8, 'CRIM34', 1, 4, 'VESPERTINO'),
+(9, 'CRIM35', 1, 5, 'MATUTINO'),
+(10, 'CRIM36', 1, 5, 'VESPERTINO');
+
+-- =========================================================
+-- USUARIOS DOCENTES COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO usuarios (
+    id_usuario,
+    nombre,
+    apellido_paterno,
+    apellido_materno,
+    correo,
+    password,
+    telefono,
+    estado
+) VALUES
+(5, 'Adriana', 'Soto', 'Mendez', 'adriana.soto@unifront.com', @demo_password, '6865551005', 'ACTIVO'),
+(6, 'Fernando', 'Luna', 'Garcia', 'fernando.luna@unifront.com', @demo_password, '6865551006', 'ACTIVO'),
+(7, 'Patricia', 'Ortega', 'Ruiz', 'patricia.ortega@unifront.com', @demo_password, '6865551007', 'ACTIVO'),
+(8, 'Hector', 'Vargas', 'Nunez', 'hector.vargas@unifront.com', @demo_password, '6865551008', 'ACTIVO'),
+(9, 'Gabriela', 'Medina', 'Paz', 'gabriela.medina@unifront.com', @demo_password, '6865551009', 'ACTIVO'),
+(10, 'Jorge', 'Cabrera', 'Leon', 'jorge.cabrera@unifront.com', @demo_password, '6865551010', 'ACTIVO'),
+(11, 'Marisol', 'Campos', 'Reyes', 'marisol.campos@unifront.com', @demo_password, '6865551011', 'ACTIVO'),
+(12, 'Alberto', 'Nava', 'Rios', 'alberto.nava@unifront.com', @demo_password, '6865551012', 'ACTIVO'),
+(13, 'Claudia', 'Salazar', 'Pena', 'claudia.salazar@unifront.com', @demo_password, '6865551013', 'ACTIVO');
+
+INSERT INTO usuario_roles (
+    id_usuario,
+    id_rol
+) VALUES
+(5, 3),
+(6, 3),
+(7, 3),
+(8, 3),
+(9, 3),
+(10, 3),
+(11, 3),
+(12, 3),
+(13, 3);
+
+-- =========================================================
+-- DOCENTES COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO docentes (
+    id_docente,
+    id_usuario,
+    numero_empleado,
+    especialidad,
+    grado_academico,
+    fecha_ingreso,
+    estado
+) VALUES
+(2, 5, 'DOC-002', 'Criminalistica de campo', 'Maestria', '2021-02-15', TRUE),
+(3, 6, 'DOC-003', 'Derecho penal', 'Maestria', '2019-08-20', TRUE),
+(4, 7, 'DOC-004', 'Psicologia forense', 'Doctorado', '2018-05-10', TRUE),
+(5, 8, 'DOC-005', 'Estadistica aplicada', 'Maestria', '2022-01-17', TRUE),
+(6, 9, 'DOC-006', 'Metodologia de investigacion', 'Doctorado', '2020-09-01', TRUE),
+(7, 10, 'DOC-007', 'Sociologia criminal', 'Maestria', '2023-01-09', TRUE),
+(8, 11, 'DOC-008', 'Victimologia', 'Maestria', '2021-09-06', TRUE),
+(9, 12, 'DOC-009', 'Medicina legal', 'Especialidad', '2017-04-03', TRUE),
+(10, 13, 'DOC-010', 'Tecnicas de entrevista', 'Maestria', '2024-01-12', TRUE);
+
+-- =========================================================
+-- GRUPOS - MATERIAS COMPLEMENTARIOS
+-- Logica: se ofertan las demas materias del Plan 2014 para el grupo
+-- CRIM27 en el periodo activo, pero se reparten entre docentes 2 al 10.
+-- Esto mantiene al docente 1 con una sola clase y permite probar que
+-- cada docente vea solo sus asignaciones en calificaciones y asistencia.
+-- =========================================================
+
+INSERT INTO grupos_materias (
+    id_grupo_materia,
+    id_grupo,
+    id_materia,
+    id_docente,
+    id_periodo,
+    aula,
+    cupo_maximo
+) VALUES
+-- Docente 2: toma Criminalistica I para que docente 1 no concentre todo.
+(2, 1, 1, 2, 1, 'A-102', 40),
+-- Docente 3: toma Criminologia I en el mismo grupo y periodo activo.
+(3, 1, 2, 3, 1, 'A-103', 40),
+-- Docente 4: toma Estadistica Basica para cubrir otra materia del plan.
+(4, 1, 3, 4, 1, 'A-104', 40),
+-- Docente 5: toma Informatica Aplicada a la Criminologia.
+(5, 1, 4, 5, 1, 'A-105', 40),
+-- Docente 6: toma Introduccion al Estudio del Derecho.
+(6, 1, 5, 6, 1, 'A-106', 40),
+-- Docente 7: toma Criminologia II.
+(7, 1, 7, 7, 1, 'B-101', 40),
+-- Docente 8: toma Derecho Constitucional.
+(8, 1, 8, 8, 1, 'B-102', 40),
+-- Docente 9: toma Introduccion a la Psicologia.
+(9, 1, 9, 9, 1, 'B-103', 40),
+-- Docente 10: toma Sistemas de Identificacion.
+(10, 1, 10, 10, 1, 'B-104', 40);
+
+-- =========================================================
+-- USUARIOS ALUMNOS COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO usuarios (
+    id_usuario,
+    nombre,
+    apellido_paterno,
+    apellido_materno,
+    correo,
+    password,
+    telefono,
+    estado
+) VALUES
+(14, 'Ana', 'Morales', 'Rivera', 'ana.morales@alumnos.unifront.com', @demo_password, '6865552014', 'ACTIVO'),
+(15, 'Luis', 'Hernandez', 'Soto', 'luis.hernandez@alumnos.unifront.com', @demo_password, '6865552015', 'ACTIVO'),
+(16, 'Sofia', 'Torres', 'Vega', 'sofia.torres@alumnos.unifront.com', @demo_password, '6865552016', 'ACTIVO'),
+(17, 'Diego', 'Castillo', 'Flores', 'diego.castillo@alumnos.unifront.com', @demo_password, '6865552017', 'ACTIVO'),
+(18, 'Valeria', 'Navarro', 'Cruz', 'valeria.navarro@alumnos.unifront.com', @demo_password, '6865552018', 'ACTIVO'),
+(19, 'Miguel', 'Rojas', 'Aguilar', 'miguel.rojas@alumnos.unifront.com', @demo_password, '6865552019', 'ACTIVO'),
+(20, 'Fernanda', 'Pineda', 'Luna', 'fernanda.pineda@alumnos.unifront.com', @demo_password, '6865552020', 'ACTIVO'),
+(21, 'Ricardo', 'Salas', 'Ortega', 'ricardo.salas@alumnos.unifront.com', @demo_password, '6865552021', 'ACTIVO'),
+(22, 'Daniela', 'Vega', 'Montes', 'daniela.vega@alumnos.unifront.com', @demo_password, '6865552022', 'ACTIVO');
+
+INSERT INTO usuario_roles (
+    id_usuario,
+    id_rol
+) VALUES
+(14, 4),
+(15, 4),
+(16, 4),
+(17, 4),
+(18, 4),
+(19, 4),
+(20, 4),
+(21, 4),
+(22, 4);
+
+-- =========================================================
+-- ALUMNOS COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO alumnos (
+    id_alumno,
+    matricula,
+    numero_control,
+    id_usuario,
+    id_carrera,
+    id_plan,
+    fecha_nacimiento,
+    ciudad_nacimiento,
+    municipio_nacimiento,
+    nacionalidad,
+    sexo,
+    curp,
+    direccion,
+    ciudad,
+    estado,
+    correo_contacto,
+    fecha_ingreso,
+    estatus
+) VALUES
+(2, '20260002', 'UC20260002', 14, 1, 1, '2005-02-03', 'Mexicali', 'Mexicali', 'Mexicana', 'F', 'MORA050203MBCRNV02', 'Av. Reforma 210, Colonia Nueva', 'Mexicali', 'Baja California', 'ana.morales@example.com', '2026-01-05', 'ACTIVO'),
+(3, '20260003', 'UC20260003', 15, 1, 1, '2004-11-22', 'Tecate', 'Tecate', 'Mexicana', 'M', 'HESL041122HBCRTO03', 'Calle Roble 45, Colonia Industrial', 'Mexicali', 'Baja California', 'luis.hernandez@example.com', '2026-01-05', 'ACTIVO'),
+(4, '20260004', 'UC20260004', 16, 1, 1, '2005-07-09', 'Tijuana', 'Tijuana', 'Mexicana', 'F', 'TOVS050709MBCRGF04', 'Calle Encino 76, Colonia Independencia', 'Mexicali', 'Baja California', 'sofia.torres@example.com', '2026-01-05', 'ACTIVO'),
+(5, '20260005', 'UC20260005', 17, 1, 1, '2004-04-18', 'Ensenada', 'Ensenada', 'Mexicana', 'M', 'CAFD040418HBCSLG05', 'Av. Universidad 300, Colonia Esperanza', 'Mexicali', 'Baja California', 'diego.castillo@example.com', '2026-01-05', 'ACTIVO'),
+(6, '20260006', 'UC20260006', 18, 1, 1, '2005-09-30', 'Mexicali', 'Mexicali', 'Mexicana', 'F', 'NACV050930MBCVRL06', 'Calle Sauce 118, Colonia Hidalgo', 'Mexicali', 'Baja California', 'valeria.navarro@example.com', '2026-01-05', 'ACTIVO'),
+(7, '20260007', 'UC20260007', 19, 1, 1, '2004-12-14', 'San Felipe', 'San Felipe', 'Mexicana', 'M', 'ROAM041214HBCJGG07', 'Calle Rio Colorado 91, Colonia Progreso', 'Mexicali', 'Baja California', 'miguel.rojas@example.com', '2026-01-05', 'ACTIVO'),
+(8, '20260008', 'UC20260008', 20, 1, 1, '2005-03-26', 'Mexicali', 'Mexicali', 'Mexicana', 'F', 'PILF050326MBCNNR08', 'Blvd. Lazaro Cardenas 805, Colonia Rivera', 'Mexicali', 'Baja California', 'fernanda.pineda@example.com', '2026-01-05', 'ACTIVO'),
+(9, '20260009', 'UC20260009', 21, 1, 1, '2004-10-08', 'Tecate', 'Tecate', 'Mexicana', 'M', 'SAOR041008HBCLRC09', 'Calle Mision 66, Colonia Baja', 'Mexicali', 'Baja California', 'ricardo.salas@example.com', '2026-01-05', 'ACTIVO'),
+(10, '20260010', 'UC20260010', 22, 1, 1, '2005-05-19', 'Tijuana', 'Tijuana', 'Mexicana', 'F', 'VEMD050519MBCGNN10', 'Privada Del Sol 12, Colonia Jardin', 'Mexicali', 'Baja California', 'daniela.vega@example.com', '2026-01-05', 'ACTIVO');
+
+-- =========================================================
+-- INSCRIPCIONES COMPLEMENTARIAS
+-- =========================================================
+
+INSERT INTO inscripciones (
+    id_inscripcion,
+    id_alumno,
+    id_grupo,
+    id_periodo,
+    fecha_inscripcion,
+    estado
+) VALUES
+(2, 2, 1, 1, '2026-01-05', 'ACTIVO'),
+(3, 3, 1, 1, '2026-01-05', 'ACTIVO'),
+(4, 4, 1, 1, '2026-01-05', 'ACTIVO'),
+(5, 5, 1, 1, '2026-01-05', 'ACTIVO'),
+(6, 6, 1, 1, '2026-01-05', 'ACTIVO'),
+(7, 7, 1, 2, '2026-05-06', 'ACTIVO'),
+(8, 8, 1, 2, '2026-05-06', 'ACTIVO'),
+(9, 9, 1, 2, '2026-05-06', 'ACTIVO'),
+(10, 10, 1, 2, '2026-05-06', 'ACTIVO');
+
+-- =========================================================
+-- CARGAS ACADEMICAS COMPLEMENTARIAS
+-- =========================================================
+
+INSERT INTO carga_academica (
+    id_carga,
+    id_alumno,
+    id_grupo_materia,
+    oportunidad,
+    intento,
+    estatus,
+    fecha_inscripcion
+) VALUES
+(2, 2, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-01-05'),
+(3, 3, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-01-05'),
+(4, 4, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-01-05'),
+(5, 5, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-01-05'),
+(6, 6, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-01-05'),
+(7, 7, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-05-06'),
+(8, 8, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-05-06'),
+(9, 9, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-05-06'),
+(10, 10, 1, 'ORDINARIO', 1, 'CURSANDO', '2026-05-06');
+
+-- =========================================================
+-- PROCEDENCIA ACADEMICA COMPLEMENTARIA
+-- =========================================================
+
+INSERT INTO procedencia_academica (
+    id_procedencia,
+    id_alumno,
+    escuela_procedencia,
+    nivel_academico,
+    estado_procedencia,
+    promedio_general,
+    fecha_egreso
+) VALUES
+(2, 2, 'Cobach Plantel Baja California', 'BACHILLERATO', 'Baja California', 91.20, '2025-07-10'),
+(3, 3, 'Cecyte Plantel Xochimilco', 'BACHILLERATO', 'Baja California', 86.40, '2025-07-12'),
+(4, 4, 'Preparatoria Federal Lazaro Cardenas', 'BACHILLERATO', 'Baja California', 92.10, '2025-07-08'),
+(5, 5, 'Colegio de Bachilleres Plantel Ensenada', 'BACHILLERATO', 'Baja California', 84.70, '2025-07-14'),
+(6, 6, 'Cbtis 21', 'BACHILLERATO', 'Baja California', 89.90, '2025-07-13'),
+(7, 7, 'Cecyte Plantel San Felipe', 'BACHILLERATO', 'Baja California', 87.50, '2025-07-11'),
+(8, 8, 'Preparatoria Tecnica Municipal', 'BACHILLERATO', 'Baja California', 94.30, '2025-07-09'),
+(9, 9, 'Cobach Plantel Tecate', 'BACHILLERATO', 'Baja California', 85.80, '2025-07-15'),
+(10, 10, 'Cbtis 140', 'BACHILLERATO', 'Baja California', 90.60, '2025-07-16');
+
+-- =========================================================
+-- TUTORES COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO tutores (
+    id_tutor,
+    nombre,
+    parentesco,
+    telefono,
+    correo,
+    ocupacion
+) VALUES
+(2, 'Elena Rivera Castro', 'Madre', '6865553002', 'elena.rivera@example.com', 'Contadora'),
+(3, 'Rafael Hernandez Mora', 'Padre', '6865553003', 'rafael.hernandez@example.com', 'Tecnico'),
+(4, 'Lucia Vega Padilla', 'Madre', '6865553004', 'lucia.vega@example.com', 'Docente'),
+(5, 'Manuel Castillo Ruiz', 'Padre', '6865553005', 'manuel.castillo@example.com', 'Comerciante'),
+(6, 'Rosa Cruz Lopez', 'Madre', '6865553006', 'rosa.cruz@example.com', 'Enfermera'),
+(7, 'Guillermo Rojas Soto', 'Padre', '6865553007', 'guillermo.rojas@example.com', 'Mecanico'),
+(8, 'Patricia Luna Garcia', 'Madre', '6865553008', 'patricia.luna@example.com', 'Administradora'),
+(9, 'Sergio Salas Ruiz', 'Padre', '6865553009', 'sergio.salas@example.com', 'Ingeniero'),
+(10, 'Martha Montes Reyes', 'Madre', '6865553010', 'martha.montes@example.com', 'Abogada');
+
+INSERT INTO alumno_tutor (
+    id_alumno,
+    id_tutor
+) VALUES
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8),
+(9, 9),
+(10, 10);
+
+-- =========================================================
+-- CONTACTOS DE EMERGENCIA COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO contactos_emergencia (
+    id_contacto,
+    id_alumno,
+    nombre,
+    parentesco,
+    telefono,
+    correo,
+    direccion,
+    contacto_principal
+) VALUES
+(3, 2, 'Elena Rivera Castro', 'Madre', '6865553002', 'elena.rivera@example.com', 'Av. Reforma 210, Mexicali', TRUE),
+(4, 3, 'Rafael Hernandez Mora', 'Padre', '6865553003', 'rafael.hernandez@example.com', 'Calle Roble 45, Mexicali', TRUE),
+(5, 4, 'Lucia Vega Padilla', 'Madre', '6865553004', 'lucia.vega@example.com', 'Calle Encino 76, Mexicali', TRUE),
+(6, 5, 'Manuel Castillo Ruiz', 'Padre', '6865553005', 'manuel.castillo@example.com', 'Av. Universidad 300, Mexicali', TRUE),
+(7, 6, 'Rosa Cruz Lopez', 'Madre', '6865553006', 'rosa.cruz@example.com', 'Calle Sauce 118, Mexicali', TRUE),
+(8, 7, 'Guillermo Rojas Soto', 'Padre', '6865553007', 'guillermo.rojas@example.com', 'Calle Rio Colorado 91, Mexicali', TRUE),
+(9, 8, 'Patricia Luna Garcia', 'Madre', '6865553008', 'patricia.luna@example.com', 'Blvd. Lazaro Cardenas 805, Mexicali', TRUE),
+(10, 9, 'Sergio Salas Ruiz', 'Padre', '6865553009', 'sergio.salas@example.com', 'Calle Mision 66, Mexicali', TRUE),
+(11, 10, 'Martha Montes Reyes', 'Madre', '6865553010', 'martha.montes@example.com', 'Privada Del Sol 12, Mexicali', TRUE);
+
+-- =========================================================
+-- SEGUROS MEDICOS COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO seguros_medicos (
+    id_seguro,
+    id_alumno,
+    tiene_seguro,
+    institucion,
+    numero_poliza
+) VALUES
+(2, 2, TRUE, 'IMSS', 'IMSS-2026-0002'),
+(3, 3, TRUE, 'ISSSTE', 'ISSSTE-2026-0003'),
+(4, 4, TRUE, 'IMSS', 'IMSS-2026-0004'),
+(5, 5, FALSE, NULL, NULL),
+(6, 6, TRUE, 'Seguro Popular', 'SP-2026-0006'),
+(7, 7, TRUE, 'IMSS', 'IMSS-2026-0007'),
+(8, 8, TRUE, 'ISSSTE', 'ISSSTE-2026-0008'),
+(9, 9, FALSE, NULL, NULL),
+(10, 10, TRUE, 'IMSS', 'IMSS-2026-0010');
+
+-- =========================================================
+-- RECEPCION DE DOCUMENTOS COMPLEMENTARIA
+-- =========================================================
+
+INSERT INTO recepcion_documentos (
+    id_recepcion,
+    id_alumno,
+    ficha_inscripcion,
+    acta_original,
+    acta_copias,
+    certificado_original,
+    constancia_terminacion,
+    fotografias,
+    curp_documento,
+    fecha_recepcion,
+    recibido_por,
+    observaciones
+) VALUES
+(2, 2, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, '2026-01-05', 4, 'Expediente completo.'),
+(3, 3, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, '2026-01-05', 4, 'Expediente completo.'),
+(4, 4, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, '2026-01-05', 4, 'Expediente completo.'),
+(5, 5, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, '2026-01-05', 4, 'Pendiente entrega de fotografias.'),
+(6, 6, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, '2026-01-05', 4, 'Expediente completo.'),
+(7, 7, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, '2026-05-06', 4, 'Expediente completo.'),
+(8, 8, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, '2026-05-06', 4, 'Expediente completo.'),
+(9, 9, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, '2026-05-06', 4, 'Pendiente cotejo de certificado original.'),
+(10, 10, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, '2026-05-06', 4, 'Expediente completo.');
+
+-- =========================================================
+-- CALIFICACIONES COMPLEMENTARIAS
+-- =========================================================
+
+INSERT INTO calificaciones (
+    id_calificacion,
+    id_carga,
+    id_parcial,
+    calificacion,
+    capturado_por
+) VALUES
+(4, 2, 1, 89.00, 5),
+(5, 3, 1, 84.50, 6),
+(6, 4, 1, 91.00, 7),
+(7, 5, 1, 78.00, 8),
+(8, 6, 1, 95.00, 9),
+(9, 7, 1, 82.00, 10),
+(10, 8, 1, 88.50, 11),
+(11, 9, 1, 74.00, 12),
+(12, 10, 1, 93.00, 13);
+
+-- =========================================================
+-- ASISTENCIAS COMPLEMENTARIAS
+-- =========================================================
+
+INSERT INTO asistencias (
+    id_asistencia,
+    id_carga,
+    id_parcial,
+    fecha,
+    asistencia
+) VALUES
+(5, 2, 1, '2026-01-12', TRUE),
+(6, 3, 1, '2026-01-12', TRUE),
+(7, 4, 1, '2026-01-12', TRUE),
+(8, 5, 1, '2026-01-12', FALSE),
+(9, 6, 1, '2026-01-12', TRUE),
+(10, 7, 1, '2026-05-11', TRUE),
+(11, 8, 1, '2026-05-11', TRUE),
+(12, 9, 1, '2026-05-11', TRUE),
+(13, 10, 1, '2026-05-11', FALSE);
+
+-- =========================================================
+-- HISTORIAL ACADEMICO COMPLEMENTARIO
+-- =========================================================
+
+INSERT INTO historial_academico (
+    id_historial,
+    id_alumno,
+    id_materia,
+    id_periodo,
+    tipo_evaluacion,
+    oportunidad,
+    calificacion_final,
+    resultado,
+    fecha_cierre
+) VALUES
+(2, 2, 2, 1, 'ORDINARIO', 1, 89.00, 'APROBADO', '2026-04-30'),
+(3, 3, 3, 1, 'ORDINARIO', 1, 84.50, 'APROBADO', '2026-04-30'),
+(4, 4, 4, 1, 'ORDINARIO', 1, 91.00, 'APROBADO', '2026-04-30'),
+(5, 5, 5, 1, 'ORDINARIO', 1, 78.00, 'APROBADO', '2026-04-30'),
+(6, 6, 6, 1, 'ORDINARIO', 1, 95.00, 'APROBADO', '2026-04-30'),
+(7, 7, 7, 2, 'ORDINARIO', 1, 82.00, 'APROBADO', '2026-08-31'),
+(8, 8, 8, 2, 'ORDINARIO', 1, 88.50, 'APROBADO', '2026-08-31'),
+(9, 9, 9, 2, 'ORDINARIO', 1, 64.00, 'REPROBADO', '2026-08-31'),
+(10, 10, 10, 2, 'ORDINARIO', 1, 93.00, 'APROBADO', '2026-08-31');
+
+-- =========================================================
+-- EXTRAORDINARIOS COMPLEMENTARIOS
+-- =========================================================
+
+INSERT INTO extraordinarios (
+    id_extraordinario,
+    id_alumno,
+    id_materia,
+    intento,
+    fecha_examen,
+    calificacion,
+    estatus,
+    observaciones
+) VALUES
+(2, 2, 2, 2, '2026-05-11', 72.00, 'APROBADO', 'Acreditado en segunda oportunidad.'),
+(3, 3, 3, 2, '2026-05-12', 68.00, 'REPROBADO', 'No alcanzo el minimo aprobatorio.'),
+(4, 4, 4, 2, '2026-05-13', 75.00, 'APROBADO', 'Acreditado en segunda oportunidad.'),
+(5, 5, 5, 3, '2026-05-14', 70.00, 'APROBADO', 'Regularizacion aprobada.'),
+(6, 6, 6, 2, '2026-05-15', 80.00, 'APROBADO', 'Calificacion maxima de extraordinario.'),
+(7, 7, 7, 2, '2026-09-03', 65.00, 'REPROBADO', 'Requiere recursamiento.'),
+(8, 8, 8, 2, '2026-09-04', 77.00, 'APROBADO', 'Acreditado en segunda oportunidad.'),
+(9, 9, 9, 3, '2026-09-05', 0.00, 'NP', 'No se presento al examen.'),
+(10, 10, 10, 2, '2026-09-06', 79.00, 'APROBADO', 'Acreditado en segunda oportunidad.');
+
+-- =========================================================
+-- EMPRESAS COMPLEMENTARIAS
+-- =========================================================
+
+INSERT INTO empresas (
+    id_empresa,
+    nombre,
+    direccion,
+    telefono,
+    correo
+) VALUES
+(3, 'Laboratorio Forense del Pacifico', 'Calle Novena 900, Mexicali, Baja California', '6865550203', 'contacto@forensepacifico.com'),
+(4, 'Instituto Municipal de Prevencion', 'Av. Ayuntamiento 120, Mexicali, Baja California', '6865550204', 'prevencion@institutomxl.gob.mx'),
+(5, 'Clinica Integral del Valle', 'Blvd. Anahuac 700, Mexicali, Baja California', '6865550205', 'rh@clinicavalle.com'),
+(6, 'Centro de Atencion Comunitaria Norte', 'Calle Norte 321, Mexicali, Baja California', '6865550206', 'contacto@cacnorte.org'),
+(7, 'Consultores Educativos Frontera', 'Av. Colon 404, Mexicali, Baja California', '6865550207', 'info@cef.com.mx'),
+(8, 'Despacho Juridico Rivera y Asociados', 'Calle Mexico 515, Mexicali, Baja California', '6865550208', 'contacto@riveraasociados.mx'),
+(9, 'Seguridad Integral Baja', 'Blvd. Justo Sierra 280, Mexicali, Baja California', '6865550209', 'operaciones@seguridadbaja.mx'),
+(10, 'Centro de Investigacion Social Aplicada', 'Av. Madero 618, Mexicali, Baja California', '6865550210', 'vinculacion@cisa.org.mx');
+
+-- =========================================================
+-- SERVICIO SOCIAL COMPLEMENTARIO
+-- =========================================================
+
+INSERT INTO servicio_social (
+    id_servicio,
+    id_alumno,
+    id_empresa,
+    horas_requeridas,
+    horas_completadas,
+    fecha_inicio,
+    fecha_fin,
+    estado
+) VALUES
+(2, 2, 3, 480, 480, '2025-08-01', '2026-01-30', 'COMPLETADO'),
+(3, 3, 4, 480, 260, '2026-02-01', NULL, 'EN_PROCESO'),
+(4, 4, 5, 480, 480, '2025-08-01', '2026-01-30', 'COMPLETADO'),
+(5, 5, 6, 480, 180, '2026-02-01', NULL, 'EN_PROCESO'),
+(6, 6, 7, 480, 480, '2025-08-01', '2026-01-30', 'COMPLETADO'),
+(7, 7, 8, 480, 90, '2026-05-10', NULL, 'EN_PROCESO'),
+(8, 8, 9, 480, 140, '2026-05-10', NULL, 'EN_PROCESO'),
+(9, 9, 10, 480, 480, '2025-08-01', '2026-01-30', 'COMPLETADO'),
+(10, 10, 3, 480, 75, '2026-05-10', NULL, 'EN_PROCESO');
+
+-- =========================================================
+-- PRACTICAS PROFESIONALES COMPLEMENTARIAS
+-- =========================================================
+
+INSERT INTO practicas_profesionales (
+    id_practica,
+    id_alumno,
+    id_empresa,
+    proyecto,
+    asesor_empresa,
+    asesor_universidad,
+    fecha_inicio,
+    fecha_fin,
+    estado
+) VALUES
+(2, 2, 3, 'Apoyo en cadena de custodia documental', 'Roberto Valdez Cano', 'Adriana Soto Mendez', '2026-02-01', NULL, 'EN_PROCESO'),
+(3, 3, 4, 'Programa de prevencion escolar', 'Isabel Duarte Solis', 'Fernando Luna Garcia', '2026-02-01', NULL, 'EN_PROCESO'),
+(4, 4, 5, 'Analisis de expedientes clinicos', 'Mariana Ponce Diaz', 'Patricia Ortega Ruiz', '2026-02-01', NULL, 'EN_PROCESO'),
+(5, 5, 6, 'Diagnostico comunitario de seguridad', 'Omar Beltran Nieto', 'Hector Vargas Nunez', '2026-02-01', NULL, 'EN_PROCESO'),
+(6, 6, 7, 'Evaluacion de talleres preventivos', 'Ruth Campos Vera', 'Gabriela Medina Paz', '2026-02-01', NULL, 'EN_PROCESO'),
+(7, 7, 8, 'Asistencia en archivo juridico', 'Laura Ibarra Leon', 'Jorge Cabrera Leon', '2026-05-15', NULL, 'EN_PROCESO'),
+(8, 8, 9, 'Mapeo de indicadores de riesgo', 'Cesar Molina Paz', 'Marisol Campos Reyes', '2026-05-15', NULL, 'EN_PROCESO'),
+(9, 9, 10, 'Investigacion social aplicada', 'Nadia Trejo Mora', 'Alberto Nava Rios', '2026-05-15', NULL, 'EN_PROCESO'),
+(10, 10, 3, 'Control de evidencias digitales', 'Roberto Valdez Cano', 'Claudia Salazar Pena', '2026-05-15', NULL, 'EN_PROCESO');
+
+-- =========================================================
+-- TITULACION COMPLEMENTARIA
+-- =========================================================
+
+INSERT INTO titulacion (
+    id_titulacion,
+    id_alumno,
+    modalidad,
+    cumple_promedio,
+    servicio_social_liberado,
+    practicas_liberadas,
+    certificado_emitido,
+    pagos_titulacion_completos,
+    numero_autorizacion,
+    acta_examen,
+    titulo_emitido,
+    fecha_titulacion,
+    observaciones
+) VALUES
+(2, 2, 'PROMEDIO', TRUE, TRUE, FALSE, TRUE, FALSE, 'TIT-2026-0002', NULL, FALSE, NULL, 'Servicio social liberado, practicas en seguimiento.'),
+(3, 3, 'TESINA', FALSE, FALSE, FALSE, FALSE, FALSE, NULL, NULL, FALSE, NULL, 'Registro preliminar de tesina.'),
+(4, 4, 'PROMEDIO', TRUE, TRUE, FALSE, TRUE, TRUE, 'TIT-2026-0004', NULL, FALSE, NULL, 'Pendiente liberacion de practicas profesionales.'),
+(5, 5, 'TESIS', FALSE, FALSE, FALSE, FALSE, FALSE, NULL, NULL, FALSE, NULL, 'Tema de tesis en revision.'),
+(6, 6, 'PROMEDIO', TRUE, TRUE, FALSE, TRUE, TRUE, 'TIT-2026-0006', NULL, FALSE, NULL, 'Pendiente cierre de practicas.'),
+(7, 7, 'TESINA', FALSE, FALSE, FALSE, FALSE, FALSE, NULL, NULL, FALSE, NULL, 'Expediente de titulacion iniciado.'),
+(8, 8, 'TESIS', FALSE, FALSE, FALSE, FALSE, FALSE, NULL, NULL, FALSE, NULL, 'Proyecto de investigacion registrado.'),
+(9, 9, 'PROMEDIO', FALSE, TRUE, FALSE, FALSE, FALSE, NULL, NULL, FALSE, NULL, 'Requiere acreditar materia pendiente.'),
+(10, 10, 'TESINA', FALSE, FALSE, FALSE, FALSE, FALSE, NULL, NULL, FALSE, NULL, 'Registro preliminar de proceso de titulacion.');

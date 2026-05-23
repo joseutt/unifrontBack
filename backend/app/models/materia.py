@@ -43,3 +43,9 @@ class Materia(Base):
         "PlanMateria",
         back_populates="materia"
     )
+
+    prerrequisitos = relationship(
+        "MateriaPrerrequisito",
+        foreign_keys="MateriaPrerrequisito.id_materia",
+        back_populates="materia"
+    )

@@ -39,7 +39,8 @@ from app.routers import (
     roles,
     auth,
     documentos,
-    plan_estudio
+    plan_estudio,
+    reportes
 )
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -64,6 +65,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 @app.get("/")
@@ -105,3 +107,4 @@ app.include_router(tutores.router)
 app.include_router(auth.router)
 app.include_router(documentos.router)
 app.include_router(plan_estudio.router)
+app.include_router(reportes.router)

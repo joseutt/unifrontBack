@@ -1,6 +1,7 @@
 from sqlalchemy import (
     Column,
     BigInteger,
+    Integer,
     Date,
     Boolean,
     ForeignKey
@@ -24,8 +25,15 @@ class Asistencia(Base):
         ForeignKey("carga_academica.id_carga")
     )
 
+    id_parcial = Column(
+        Integer,
+        ForeignKey("parciales.id_parcial")
+    )
+
     fecha = Column(Date)
 
     asistencia = Column(Boolean)
 
     carga = relationship("CargaAcademica")
+
+    parcial = relationship("Parcial")
