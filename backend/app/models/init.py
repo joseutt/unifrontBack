@@ -4,6 +4,7 @@ from app.models.usuario_rol import usuario_roles
 from app.models.carrera import Carrera
 from app.models.cuatrimestre import Cuatrimestre
 from app.models.materia import Materia
+from app.models.materia_prerrequisito import MateriaPrerrequisito
 from app.models.plan_estudio import PlanEstudio
 from app.models.plan_materia import PlanMateria
 from app.models.alumno import Alumno

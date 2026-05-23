@@ -188,6 +188,7 @@ def _apply_carga_filters(
     query,
     *,
     alumno_id=None,
+    grupo_materia_id=None,
     grupo_id=None,
     docente_id=None,
     materia_id=None,
@@ -196,6 +197,8 @@ def _apply_carga_filters(
 ):
     if alumno_id is not None:
         query = query.filter(CargaAcademica.id_alumno == alumno_id)
+    if grupo_materia_id is not None:
+        query = query.filter(CargaAcademica.id_grupo_materia == grupo_materia_id)
     if estatus is not None:
         query = query.filter(CargaAcademica.estatus == estatus)
     if any(value is not None for value in [grupo_id, docente_id, materia_id, periodo_id]):
@@ -215,6 +218,7 @@ def _apply_carga_filters(
 def get_cargas_academicas_detalle(
     db: Session,
     alumno_id=None,
+    grupo_materia_id=None,
     grupo_id=None,
     docente_id=None,
     materia_id=None,
@@ -237,6 +241,7 @@ def get_cargas_academicas_detalle(
     query = _apply_carga_filters(
         query,
         alumno_id=alumno_id,
+        grupo_materia_id=grupo_materia_id,
         grupo_id=grupo_id,
         docente_id=docente_id,
         materia_id=materia_id,

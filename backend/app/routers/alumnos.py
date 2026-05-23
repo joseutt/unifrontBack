@@ -5,10 +5,11 @@ from fastapi import (
     status
 )
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.schemas.alumno import (
     AlumnoCreate,
+    AlumnoDetalleResponse,
     AlumnoResponse,
     AlumnoUpdate
 )
@@ -22,11 +23,46 @@ from app.crud.crud_alumno import (
 )
 
 from app.database import get_db
+from app.models.alumno import Alumno
 
 router = APIRouter(
     prefix="/alumnos",
     tags=["Alumnos"]
 )
+
+
+def _nombre_usuario(usuario):
+    if not usuario:
+        return None
+
+    partes = [
+        usuario.nombre,
+        usuario.apellido_paterno,
+        usuario.apellido_materno
+    ]
+
+    return " ".join(parte for parte in partes if parte)
+
+
+def _alumno_detalle(alumno):
+    return {
+        "id_alumno": alumno.id_alumno,
+        "matricula": alumno.matricula,
+        "numero_control": alumno.numero_control,
+        "nombre": _nombre_usuario(alumno.usuario),
+        "estatus": alumno.estatus,
+        "id_carrera": alumno.id_carrera,
+        "id_plan": alumno.id_plan,
+        "carrera": {
+            "id_carrera": alumno.carrera.id_carrera,
+            "clave": alumno.carrera.clave,
+            "nombre": alumno.carrera.nombre
+        } if alumno.carrera else None,
+        "plan": {
+            "id_plan": alumno.plan.id_plan,
+            "nombre_plan": alumno.plan.nombre_plan
+        } if alumno.plan else None
+    }
 
 
 
@@ -39,6 +75,27 @@ def listar_alumnos(
     db: Session = Depends(get_db)
 ):
     return get_alumnos(db)
+
+
+@router.get(
+    "/detalle",
+    response_model=list[AlumnoDetalleResponse]
+)
+def listar_alumnos_detalle(
+    db: Session = Depends(get_db)
+):
+    alumnos = (
+        db.query(Alumno)
+        .options(
+            joinedload(Alumno.usuario),
+            joinedload(Alumno.carrera),
+            joinedload(Alumno.plan)
+        )
+        .order_by(Alumno.id_alumno.desc())
+        .all()
+    )
+
+    return [_alumno_detalle(alumno) for alumno in alumnos]
 
 
 @router.get(

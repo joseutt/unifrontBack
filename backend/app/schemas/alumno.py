@@ -31,6 +31,32 @@ class AlumnoResponse(AlumnoBase):
     class Config:
         from_attributes = True
 
+
+class AlumnoCarreraDetalle(BaseModel):
+    id_carrera: int
+    clave: Optional[str] = None
+    nombre: Optional[str] = None
+
+
+class AlumnoPlanDetalle(BaseModel):
+    id_plan: int
+    nombre_plan: Optional[str] = None
+
+
+class AlumnoDetalleResponse(BaseModel):
+    id_alumno: int
+    matricula: Optional[str] = None
+    numero_control: Optional[str] = None
+    nombre: Optional[str] = None
+    estatus: Optional[str] = None
+    id_carrera: Optional[int] = None
+    id_plan: Optional[int] = None
+    carrera: Optional[AlumnoCarreraDetalle] = None
+    plan: Optional[AlumnoPlanDetalle] = None
+
+    class Config:
+        from_attributes = True
+
 class AlumnoUpdate(BaseModel):
     matricula: Optional[str] = None
     numero_control: Optional[str] = None
