@@ -62,3 +62,43 @@ class CapturaCalificacionesResponse(BaseModel):
     grupo_materia: GrupoMateriaDetalleResponse
     parciales: list[ParcialDetalle]
     alumnos: list[CapturaAlumnoResponse]
+
+
+class BoletaAlumnoResponse(BaseModel):
+    id_alumno: int
+    matricula: Optional[str] = None
+    numero_control: Optional[str] = None
+    nombre: Optional[str] = None
+
+
+class BoletaCarreraResponse(BaseModel):
+    id_carrera: Optional[int] = None
+    clave: Optional[str] = None
+    nombre: Optional[str] = None
+
+
+class BoletaPeriodoResponse(BaseModel):
+    id_periodo: Optional[int] = None
+    nombre: Optional[str] = None
+
+
+class BoletaCuatrimestreResponse(BaseModel):
+    numero: Optional[int] = None
+    nombre: Optional[str] = None
+
+
+class BoletaMateriaResponse(BaseModel):
+    id_materia: Optional[int] = None
+    nombre: Optional[str] = None
+    clave: Optional[str] = None
+    calificacion_final: Optional[float] = None
+
+
+class BoletaFinalResponse(BaseModel):
+    alumno: BoletaAlumnoResponse
+    carrera: Optional[BoletaCarreraResponse] = None
+    periodo: Optional[BoletaPeriodoResponse] = None
+    cuatrimestre: Optional[BoletaCuatrimestreResponse] = None
+    materias: list[BoletaMateriaResponse] = Field(default_factory=list)
+    promedio_general: Optional[float] = None
+    asignaturas_acreditadas: int = 0

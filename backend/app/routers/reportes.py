@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session, joinedload
@@ -8,9 +10,11 @@ from app.models.alumno import Alumno
 from app.models.carrera import Carrera
 from app.models.docente import Docente
 from app.models.grupo import Grupo
+from app.models.inscripcion import Inscripcion
 from app.models.materia import Materia
 from app.models.periodo import Periodo
 from app.models.plan_estudio import PlanEstudio
+from app.models.recepcion_documento import RecepcionDocumento
 from app.models.usuario import Usuario
 from app.services.excel_service import build_xlsx
 
@@ -47,6 +51,10 @@ def _si_no(value) -> str:
 
 def _activo_inactivo(value) -> str:
     return "Activo" if value else "Inactivo"
+
+
+def _marca(value) -> str:
+    return "X" if value else ""
 
 
 def _roles_usuario(usuario: Usuario) -> str:
@@ -435,6 +443,253 @@ def _excel_response(content: bytes, filename: str) -> Response:
             "Content-Disposition": f'attachment; filename="{filename}"'
         }
     )
+
+
+def _calcular_edad(fecha_nacimiento) -> int | None:
+    if not fecha_nacimiento:
+        return None
+
+    hoy = date.today()
+    cumplio_anios = (
+        (hoy.month, hoy.day) >=
+        (fecha_nacimiento.month, fecha_nacimiento.day)
+    )
+
+    return hoy.year - fecha_nacimiento.year - (0 if cumplio_anios else 1)
+
+
+def _sexo_reinscripcion(sexo: str | None) -> str:
+    if sexo == "M":
+        return "H"
+    if sexo == "F":
+        return "M"
+
+    return ""
+
+
+def _numero_periodo_reinscripcion(periodo: Periodo | None) -> int | None:
+    if not periodo or not periodo.fecha_inicio:
+        return None
+
+    mes = periodo.fecha_inicio.month
+
+    if mes <= 4:
+        return 1
+    if mes <= 8:
+        return 2
+
+    return 3
+
+
+def _ciclo_reinscripcion(periodo: Periodo | None) -> str:
+    if not periodo or not periodo.fecha_inicio:
+        return ""
+
+    numero_periodo = _numero_periodo_reinscripcion(periodo)
+    anio = periodo.fecha_inicio.year
+
+    if periodo.fecha_inicio.month >= 9:
+        inicio = anio
+        fin = anio + 1
+    else:
+        inicio = anio - 1
+        fin = anio
+
+    return f"{inicio} - {fin} - {numero_periodo}"
+
+
+def _recepciones_por_alumno(db: Session, alumno_ids: list[int]) -> dict[int, RecepcionDocumento]:
+    if not alumno_ids:
+        return {}
+
+    recepciones = (
+        db.query(RecepcionDocumento)
+        .filter(RecepcionDocumento.id_alumno.in_(alumno_ids))
+        .order_by(
+            RecepcionDocumento.id_alumno,
+            RecepcionDocumento.fecha_recepcion.desc(),
+            RecepcionDocumento.id_recepcion.desc()
+        )
+        .all()
+    )
+
+    resultado = {}
+
+    for recepcion in recepciones:
+        if recepcion.id_alumno not in resultado:
+            resultado[recepcion.id_alumno] = recepcion
+
+    return resultado
+
+
+@router.get("/reinscripcion-alumnos")
+def obtener_reporte_reinscripcion_alumnos(
+    grupo_id: int,
+    periodo_id: int | None = None,
+    escuela: str = "CENTRO DE ESTUDIOS SUPERIORES DE LA FRONTERA (UNIFRONT)",
+    ubicacion: str = "BLVD. BERNARDO O HIGGINS NUMERO 6030 3RA. ETAPA ZONA RIO",
+    ciudad: str = "TIJUANA",
+    clave: str = "02PSU0015M",
+    coordinador_control_escolar: str = "GLENDA LAURA ESCANDON SIQUEIROS",
+    control_escolar: str = "VICTOR HUGO BORZANI RODRIGUEZ",
+    version: str = "IPES v 1.0.30",
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(_require_reportes_role)
+):
+    grupo = (
+        db.query(Grupo)
+        .options(
+            joinedload(Grupo.carrera),
+            joinedload(Grupo.cuatrimestre)
+        )
+        .filter(Grupo.id_grupo == grupo_id)
+        .first()
+    )
+
+    if not grupo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Grupo no encontrado"
+        )
+
+    periodo_query = db.query(Periodo)
+
+    if periodo_id is not None:
+        periodo = (
+            periodo_query
+            .filter(Periodo.id_periodo == periodo_id)
+            .first()
+        )
+    else:
+        periodo = (
+            periodo_query
+            .filter(Periodo.estado == "ACTIVO")
+            .order_by(Periodo.fecha_inicio.desc())
+            .first()
+        )
+
+    if not periodo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Periodo no encontrado"
+        )
+
+    inscripciones_query = (
+        db.query(Inscripcion)
+        .join(Inscripcion.alumno)
+        .join(Alumno.usuario)
+        .options(
+            joinedload(Inscripcion.alumno).joinedload(Alumno.usuario),
+            joinedload(Inscripcion.alumno).joinedload(Alumno.carrera),
+            joinedload(Inscripcion.grupo).joinedload(Grupo.carrera),
+            joinedload(Inscripcion.grupo).joinedload(Grupo.cuatrimestre),
+            joinedload(Inscripcion.periodo)
+        )
+        .filter(
+            Inscripcion.id_grupo == grupo_id,
+            Inscripcion.id_periodo == periodo.id_periodo,
+            Inscripcion.estado == "ACTIVO"
+        )
+        .order_by(
+            Usuario.apellido_paterno,
+            Usuario.apellido_materno,
+            Usuario.nombre
+        )
+    )
+
+    inscripciones = inscripciones_query.all()
+    alumno_ids = [
+        inscripcion.id_alumno
+        for inscripcion in inscripciones
+        if inscripcion.id_alumno is not None
+    ]
+    recepciones = _recepciones_por_alumno(db, alumno_ids)
+
+    alumnos = []
+
+    for index, inscripcion in enumerate(inscripciones, start=1):
+        alumno = inscripcion.alumno
+        recepcion = recepciones.get(alumno.id_alumno) if alumno else None
+
+        alumnos.append({
+            "no": index,
+            "id_alumno": alumno.id_alumno if alumno else None,
+            "matricula": alumno.matricula if alumno else "",
+            "nombre": _nombre_usuario(alumno.usuario).upper() if alumno else "",
+            "edad": _calcular_edad(alumno.fecha_nacimiento) if alumno else None,
+            "sexo": _sexo_reinscripcion(alumno.sexo) if alumno else "",
+            "sexo_origen": alumno.sexo if alumno else "",
+            "a_nac": _marca(recepcion.acta_original if recepcion else False),
+            "c_est": _marca(
+                (
+                    recepcion.certificado_original or
+                    recepcion.constancia_terminacion
+                )
+                if recepcion else False
+            ),
+            "observaciones": recepcion.observaciones if recepcion else "",
+            "numero_control": alumno.numero_control if alumno else "",
+            "fecha_validacion": (
+                recepcion.fecha_recepcion
+                if recepcion and recepcion.fecha_recepcion
+                else inscripcion.fecha_inscripcion
+            )
+        })
+
+    carrera = grupo.carrera
+    cuatrimestre = grupo.cuatrimestre
+
+    return {
+        "titulo": "Registro de Reinscripcion de Alumnos",
+        "encabezado": {
+            "dependencia": "Secretaria de Educacion",
+            "subsecretaria": (
+                "Subsecretaria de Educacion Media Superior, "
+                "Superior e Investigacion"
+            ),
+            "escuela": escuela,
+            "ubicacion": ubicacion,
+            "ciudad": ciudad,
+            "carrera": carrera.nombre if carrera else "",
+            "cuatrimestre": (
+                cuatrimestre.nombre.upper()
+                if cuatrimestre else ""
+            ),
+            "grupo": grupo.nombre,
+            "clave": clave,
+            "rvoe": carrera.clave if carrera else "",
+            "ciclo": _ciclo_reinscripcion(periodo),
+            "periodo": {
+                "id_periodo": periodo.id_periodo,
+                "nombre": periodo.nombre,
+                "fecha_inicio": periodo.fecha_inicio,
+                "fecha_fin": periodo.fecha_fin,
+                "estado": periodo.estado
+            }
+        },
+        "columnas": [
+            {"key": "no", "label": "No."},
+            {"key": "nombre", "label": "Nombre"},
+            {"key": "edad", "label": "Edad"},
+            {"key": "sexo", "label": "Sexo"},
+            {"key": "a_nac", "label": "A.Nac."},
+            {"key": "c_est", "label": "C.Est"},
+            {"key": "observaciones", "label": "Observaciones"},
+            {"key": "numero_control", "label": "No.Control"},
+            {"key": "fecha_validacion", "label": "Fec.Validacion"}
+        ],
+        "alumnos": alumnos,
+        "firmas": {
+            "coordinador_control_escolar": coordinador_control_escolar,
+            "control_escolar": control_escolar
+        },
+        "pie": {
+            "version": version,
+            "fecha": date.today(),
+            "pagina": 1,
+            "total_paginas": 1
+        }
+    }
 
 
 @router.get("")

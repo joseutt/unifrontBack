@@ -1,4 +1,4 @@
-SET NAMES utf8mb4;
+﻿SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
 CREATE DATABASE IF NOT EXISTS unifront
@@ -569,9 +569,20 @@ CREATE INDEX idx_usuario_correo
 ON usuarios(correo);
 
 -- =========================================================
+-- RUTA DE CARGA DE INSERTS
+-- 1. Catalogos base: roles, cuatrimestres, carreras, planes, materias, parciales, tipos de documento y periodos.
+-- 2. Relaciones academicas: plan_materias y materias_prerrequisito.
+-- 3. Usuarios y permisos: usuarios, usuario_roles, docentes y alumnos.
+-- 4. Oferta e inscripcion: grupos, grupos_materias, inscripciones y carga_academica.
+-- 5. Expediente del alumno: procedencia, tutores, contactos, seguros, recepcion_documentos y documentos_alumno.
+-- 6. Seguimiento academico: calificaciones, asistencias, historial_academico y extraordinarios.
+-- 7. Vinculacion y egreso: empresas, servicio_social, practicas_profesionales y titulacion.
+-- =========================================================
+
 -- ROLES FUNDAMENTALES
 -- =========================================================
 
+-- Inserta los roles base del sistema para separar permisos de administrador, control escolar, docente y alumno.
 INSERT INTO roles (nombre) VALUES
 ('ADMIN'),
 ('CONTROL_ESCOLAR'),
@@ -583,6 +594,7 @@ INSERT INTO roles (nombre) VALUES
 -- Password: Admin123*
 -- =========================================================
 
+-- Inserta el usuario administrador inicial con credenciales de acceso para operar el sistema.
 INSERT INTO usuarios (
     nombre,
     apellido_paterno,
@@ -602,6 +614,7 @@ INSERT INTO usuarios (
 );
 
 -- Asignar rol ADMIN al usuario
+-- Relaciona el usuario administrador inicial con el rol ADMIN.
 INSERT INTO usuario_roles (id_usuario, id_rol)
 VALUES (1, 1);
 
@@ -609,6 +622,7 @@ VALUES (1, 1);
 -- CUATRIMESTRES
 -- =========================================================
 
+-- Inserta el catalogo de cuatrimestres que se usa para organizar planes y grupos.
 INSERT INTO cuatrimestres (numero, nombre) VALUES
 (1, 'Primer Cuatrimestre'),
 (2, 'Segundo Cuatrimestre'),
@@ -616,16 +630,17 @@ INSERT INTO cuatrimestres (numero, nombre) VALUES
 (4, 'Cuarto Cuatrimestre'),
 (5, 'Quinto Cuatrimestre'),
 (6, 'Sexto Cuatrimestre'),
-(7, 'Séptimo Cuatrimestre'),
+(7, 'SÃ©ptimo Cuatrimestre'),
 (8, 'Octavo Cuatrimestre'),
 (9, 'Noveno Cuatrimestre'),
-(10, 'Décimo Cuatrimestre'),
+(10, 'DÃ©cimo Cuatrimestre'),
 (11, 'Onceavo Cuatrimestre');
 
 -- =========================================================
 -- CARRERAS
 -- =========================================================
 
+-- Inserta las carreras principales que estaran disponibles en el sistema.
 INSERT INTO carreras (
     clave,
     nombre,
@@ -635,21 +650,21 @@ INSERT INTO carreras (
 ) VALUES
 (
     'RVOE-BC-053-M2/14',
-    'Licenciatura en Criminología',
+    'Licenciatura en CriminologÃ­a',
     'LICENCIATURA',
     9,
     TRUE
 ),
 (
     'RVOE-BC-051-M2/14',
-    'Licenciatura en Gastronomía',
+    'Licenciatura en GastronomÃ­a',
     'LICENCIATURA',
     9,
     TRUE
 ),
 (
     'RVOE-BC-L010-M2/17',
-    'Licenciatura en Nutrición',
+    'Licenciatura en NutriciÃ³n',
     'LICENCIATURA',
     9,
     TRUE
@@ -659,6 +674,7 @@ INSERT INTO carreras (
 -- PLANES DE ESTUDIO
 -- =========================================================
 
+-- Inserta los planes de estudio iniciales asociados a cada carrera principal.
 INSERT INTO planes_estudio (
     id_carrera,
     nombre_plan,
@@ -666,46 +682,48 @@ INSERT INTO planes_estudio (
 ) VALUES
 (
     1,
-    'Plan 2014 Criminología',
+    'Plan 2014 CriminologÃ­a',
     '2014-01-01'
 ),
 (
     2,
-    'Plan 2014 Gastronomía',
+    'Plan 2014 GastronomÃ­a',
     '2014-01-01'
 ),
 (
     3,
-    'Plan 2017 Nutrición',
+    'Plan 2017 NutriciÃ³n',
     '2017-01-01'
 );
 
 -- =========================================================
--- MATERIAS BÁSICAS
+-- MATERIAS BÃSICAS
 -- =========================================================
 
+-- Inserta las materias base usadas por el plan de Criminologia.
 INSERT INTO materias (
     clave,
     nombre,
     creditos,
     estado
 ) VALUES
-('CRILI1', 'Criminalística I', 7.87, TRUE),
-('CRIM02', 'Criminología I', 7.87, TRUE),
-('CRINV1', 'Estadística Básica', 6.12, TRUE),
-('CRIM01', 'Informática Aplicada a la Criminología', 5.25, TRUE),
-('CRIJU1', 'Introducción al Estudio del Derecho', 6.12, TRUE),
-('CRIM03', 'Bases Biológicas del Comportamiento', 7.87, TRUE),
-('CRIM04', 'Criminología II', 7.87, TRUE),
+('CRILI1', 'CriminalÃ­stica I', 7.87, TRUE),
+('CRIM02', 'CriminologÃ­a I', 7.87, TRUE),
+('CRINV1', 'EstadÃ­stica BÃ¡sica', 6.12, TRUE),
+('CRIM01', 'InformÃ¡tica Aplicada a la CriminologÃ­a', 5.25, TRUE),
+('CRIJU1', 'IntroducciÃ³n al Estudio del Derecho', 6.12, TRUE),
+('CRIM03', 'Bases BiolÃ³gicas del Comportamiento', 7.87, TRUE),
+('CRIM04', 'CriminologÃ­a II', 7.87, TRUE),
 ('CRIJU2', 'Derecho Constitucional', 7, TRUE),
-('CRIPS1', 'Introducción a la Psicología', 7.87, TRUE),
-('CRILI2', 'Sistemas de Identificación', 6.12, TRUE);
+('CRIPS1', 'IntroducciÃ³n a la PsicologÃ­a', 7.87, TRUE),
+('CRILI2', 'Sistemas de IdentificaciÃ³n', 6.12, TRUE);
 
 
 -- =========================================================
--- RELACIÓN PLAN - MATERIAS
+-- RELACIÃ“N PLAN - MATERIAS
 -- =========================================================
 
+-- Relaciona el plan de estudio de Criminologia con sus materias y cuatrimestres.
 INSERT INTO plan_materias (
     id_plan,
     id_materia,
@@ -727,6 +745,7 @@ INSERT INTO plan_materias (
 -- PRERREQUISITOS
 -- =========================================================
 
+-- Inserta prerrequisitos entre materias para validar dependencias academicas.
 INSERT INTO materias_prerrequisito (
     id_materia,
     id_materia_requerida,
@@ -738,6 +757,7 @@ INSERT INTO materias_prerrequisito (
 -- PARCIALES
 -- =========================================================
 
+-- Inserta los parciales de evaluacion y su porcentaje dentro del periodo.
 INSERT INTO parciales (nombre, porcentaje) VALUES
 ('Primer Parcial', 25),
 ('Segundo Parcial', 25),
@@ -747,17 +767,19 @@ INSERT INTO parciales (nombre, porcentaje) VALUES
 -- TIPOS DE DOCUMENTO
 -- =========================================================
 
+-- Inserta el catalogo de tipos de documento que puede cargar o entregar un alumno.
 INSERT INTO tipos_documento (nombre) VALUES
 ('Acta de Nacimiento'),
 ('CURP'),
 ('Certificado'),
-('Fotografías'),
+('FotografÃ­as'),
 ('Comprobante de Domicilio');
 
 -- =========================================================
 -- PERIODO ACTIVO
 -- =========================================================
 
+-- Inserta el periodo academico activo inicial para inscripciones y grupos.
 INSERT INTO periodos (
     nombre,
     fecha_inicio,
@@ -774,6 +796,7 @@ INSERT INTO periodos (
 -- GRUPO DE PRUEBA
 -- =========================================================
 
+-- Inserta el grupo de prueba asociado a la carrera y cuatrimestre inicial.
 INSERT INTO grupos (
     nombre,
     id_carrera,
@@ -790,6 +813,7 @@ INSERT INTO grupos (
 -- DOCENTE DE PRUEBA
 -- =========================================================
 
+-- Inserta el usuario que servira como docente de prueba.
 INSERT INTO usuarios (
     nombre,
     apellido_paterno,
@@ -808,9 +832,11 @@ INSERT INTO usuarios (
     'ACTIVO'
 );
 
+-- Relaciona el usuario docente de prueba con el rol DOCENTE.
 INSERT INTO usuario_roles (id_usuario, id_rol)
 VALUES (2, 3);
 
+-- Registra los datos academicos del docente de prueba.
 INSERT INTO docentes (
     id_usuario,
     numero_empleado,
@@ -821,7 +847,7 @@ INSERT INTO docentes (
 ) VALUES (
     2,
     'DOC-001',
-    'Criminología',
+    'CriminologÃ­a',
     'Doctorado',
     '2020-01-10',
     TRUE
@@ -834,6 +860,7 @@ INSERT INTO docentes (
 -- de calificaciones y asistencia filtren por el docente autenticado.
 -- =========================================================
 
+-- Asigna una materia al grupo de prueba con su docente, periodo, aula y cupo.
 INSERT INTO grupos_materias (
     id_grupo_materia,
     id_grupo,
@@ -856,6 +883,7 @@ INSERT INTO grupos_materias (
 -- ALUMNO DE PRUEBA
 -- =========================================================
 
+-- Inserta el usuario que servira como alumno de prueba.
 INSERT INTO usuarios (
     nombre,
     apellido_paterno,
@@ -874,9 +902,11 @@ INSERT INTO usuarios (
     'ACTIVO'
 );
 
+-- Relaciona el usuario alumno de prueba con el rol ALUMNO.
 INSERT INTO usuario_roles (id_usuario, id_rol)
 VALUES (3, 4);
 
+-- Registra el expediente academico y datos personales del alumno de prueba.
 INSERT INTO alumnos (
     matricula,
     numero_control,
@@ -916,9 +946,10 @@ INSERT INTO alumnos (
 );
 
 -- =========================================================
--- INSCRIPCIÓN DEL ALUMNO
+-- INSCRIPCIÃ“N DEL ALUMNO
 -- =========================================================
 
+-- Inscribe al alumno de prueba en el grupo y periodo inicial.
 INSERT INTO inscripciones (
     id_alumno,
     id_grupo,
@@ -934,9 +965,10 @@ INSERT INTO inscripciones (
 );
 
 -- =========================================================
--- CARGA ACADÉMICA
+-- CARGA ACADÃ‰MICA
 -- =========================================================
 
+-- Registra la carga academica inicial del alumno de prueba.
 INSERT INTO carga_academica (
     id_alumno,
     id_grupo_materia,
@@ -958,6 +990,7 @@ INSERT INTO carga_academica (
 -- Password: Admin123*
 -- =========================================================
 
+-- Inserta el usuario de control escolar para tareas administrativas de alumnos y documentos.
 INSERT INTO usuarios (
     nombre,
     apellido_paterno,
@@ -976,6 +1009,7 @@ INSERT INTO usuarios (
     'ACTIVO'
 );
 
+-- Relaciona el usuario de control escolar con el rol CONTROL_ESCOLAR.
 INSERT INTO usuario_roles (id_usuario, id_rol)
 VALUES (4, 2);
 
@@ -983,6 +1017,7 @@ VALUES (4, 2);
 -- PROCEDENCIA ACADEMICA DEL ALUMNO
 -- =========================================================
 
+-- Registra la escuela de procedencia y promedio del alumno de prueba.
 INSERT INTO procedencia_academica (
     id_alumno,
     escuela_procedencia,
@@ -1003,6 +1038,7 @@ INSERT INTO procedencia_academica (
 -- TUTOR Y RELACION CON ALUMNO
 -- =========================================================
 
+-- Inserta el tutor principal del alumno de prueba.
 INSERT INTO tutores (
     nombre,
     parentesco,
@@ -1017,6 +1053,7 @@ INSERT INTO tutores (
     'Comerciante'
 );
 
+-- Relaciona el alumno de prueba con su tutor.
 INSERT INTO alumno_tutor (
     id_alumno,
     id_tutor
@@ -1029,6 +1066,7 @@ INSERT INTO alumno_tutor (
 -- CONTACTOS DE EMERGENCIA
 -- =========================================================
 
+-- Inserta contactos de emergencia para el alumno de prueba.
 INSERT INTO contactos_emergencia (
     id_alumno,
     nombre,
@@ -1061,6 +1099,7 @@ INSERT INTO contactos_emergencia (
 -- SEGURO MEDICO
 -- =========================================================
 
+-- Registra la informacion de seguro medico del alumno de prueba.
 INSERT INTO seguros_medicos (
     id_alumno,
     tiene_seguro,
@@ -1077,6 +1116,7 @@ INSERT INTO seguros_medicos (
 -- RECEPCION DE DOCUMENTOS
 -- =========================================================
 
+-- Registra los documentos fisicos recibidos para el expediente del alumno de prueba.
 INSERT INTO recepcion_documentos (
     id_alumno,
     ficha_inscripcion,
@@ -1107,6 +1147,7 @@ INSERT INTO recepcion_documentos (
 -- DOCUMENTOS DEL ALUMNO
 -- =========================================================
 
+-- Inserta documentos digitales asociados al expediente del alumno de prueba.
 INSERT INTO documentos_alumno (
     id_alumno,
     id_tipo_documento,
@@ -1144,6 +1185,7 @@ INSERT INTO documentos_alumno (
 -- CALIFICACIONES
 -- =========================================================
 
+-- Inserta calificaciones iniciales para la carga academica del alumno de prueba.
 INSERT INTO calificaciones (
     id_carga,
     id_parcial,
@@ -1173,6 +1215,7 @@ INSERT INTO calificaciones (
 -- ASISTENCIAS
 -- =========================================================
 
+-- Inserta asistencias iniciales para la carga academica del alumno de prueba.
 INSERT INTO asistencias (
     id_carga,
     id_parcial,
@@ -1208,6 +1251,7 @@ INSERT INTO asistencias (
 -- HISTORIAL ACADEMICO
 -- =========================================================
 
+-- Inserta registros de historial academico para consultar resultados finales del alumno de prueba.
 INSERT INTO historial_academico (
     id_alumno,
     id_materia,
@@ -1232,6 +1276,7 @@ INSERT INTO historial_academico (
 -- EXTRAORDINARIOS
 -- =========================================================
 
+-- Inserta examenes extraordinarios de prueba para validar segundas oportunidades.
 INSERT INTO extraordinarios (
     id_alumno,
     id_materia,
@@ -1254,6 +1299,7 @@ INSERT INTO extraordinarios (
 -- EMPRESAS
 -- =========================================================
 
+-- Inserta empresas base para servicio social y practicas profesionales.
 INSERT INTO empresas (
     nombre,
     direccion,
@@ -1277,6 +1323,7 @@ INSERT INTO empresas (
 -- SERVICIO SOCIAL
 -- =========================================================
 
+-- Registra el servicio social del alumno de prueba con avance de horas.
 INSERT INTO servicio_social (
     id_alumno,
     id_empresa,
@@ -1299,6 +1346,7 @@ INSERT INTO servicio_social (
 -- PRACTICAS PROFESIONALES
 -- =========================================================
 
+-- Registra las practicas profesionales del alumno de prueba y sus asesores.
 INSERT INTO practicas_profesionales (
     id_alumno,
     id_empresa,
@@ -1323,6 +1371,7 @@ INSERT INTO practicas_profesionales (
 -- TITULACION
 -- =========================================================
 
+-- Registra el avance del proceso de titulacion del alumno de prueba.
 INSERT INTO titulacion (
     id_alumno,
     modalidad,
@@ -1363,6 +1412,7 @@ SET @demo_password = '$2b$12$fDyZK5l1./1TY19rgskvc.lVaerFgt3eIjBN3JVUl2guZ1i0V64
 -- CARRERAS COMPLEMENTARIAS
 -- =========================================================
 
+-- Inserta carreras adicionales para ampliar el catalogo de pruebas.
 INSERT INTO carreras (
     id_carrera,
     clave,
@@ -1383,6 +1433,7 @@ INSERT INTO carreras (
 -- PLANES DE ESTUDIO COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta planes de estudio adicionales asociados a las carreras complementarias.
 INSERT INTO planes_estudio (
     id_plan,
     id_carrera,
@@ -1403,6 +1454,7 @@ INSERT INTO planes_estudio (
 -- PRERREQUISITOS COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta prerrequisitos adicionales para probar dependencias entre materias.
 INSERT INTO materias_prerrequisito (
     id_materia,
     id_materia_requerida,
@@ -1422,6 +1474,7 @@ INSERT INTO materias_prerrequisito (
 -- PERIODOS COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta periodos academicos adicionales para escenarios historicos y futuros.
 INSERT INTO periodos (
     id_periodo,
     nombre,
@@ -1443,6 +1496,7 @@ INSERT INTO periodos (
 -- GRUPOS COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta grupos complementarios para probar distintos cuatrimestres, carreras y turnos.
 INSERT INTO grupos (
     id_grupo,
     nombre,
@@ -1464,6 +1518,7 @@ INSERT INTO grupos (
 -- USUARIOS DOCENTES COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta usuarios docentes complementarios para poblar el sistema con varios profesores.
 INSERT INTO usuarios (
     id_usuario,
     nombre,
@@ -1484,6 +1539,7 @@ INSERT INTO usuarios (
 (12, 'Alberto', 'Nava', 'Rios', 'alberto.nava@unifront.com', @demo_password, '6865551012', 'ACTIVO'),
 (13, 'Claudia', 'Salazar', 'Pena', 'claudia.salazar@unifront.com', @demo_password, '6865551013', 'ACTIVO');
 
+-- Relaciona los docentes complementarios con el rol DOCENTE.
 INSERT INTO usuario_roles (
     id_usuario,
     id_rol
@@ -1502,6 +1558,7 @@ INSERT INTO usuario_roles (
 -- DOCENTES COMPLEMENTARIOS
 -- =========================================================
 
+-- Registra los perfiles academicos de los docentes complementarios.
 INSERT INTO docentes (
     id_docente,
     id_usuario,
@@ -1529,6 +1586,7 @@ INSERT INTO docentes (
 -- cada docente vea solo sus asignaciones en calificaciones y asistencia.
 -- =========================================================
 
+-- Asigna materias complementarias a grupos, docentes y periodos para probar oferta academica.
 INSERT INTO grupos_materias (
     id_grupo_materia,
     id_grupo,
@@ -1561,6 +1619,7 @@ INSERT INTO grupos_materias (
 -- USUARIOS ALUMNOS COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta usuarios alumnos complementarios para pruebas de listados, filtros y expedientes.
 INSERT INTO usuarios (
     id_usuario,
     nombre,
@@ -1581,6 +1640,7 @@ INSERT INTO usuarios (
 (21, 'Ricardo', 'Salas', 'Ortega', 'ricardo.salas@alumnos.unifront.com', @demo_password, '6865552021', 'ACTIVO'),
 (22, 'Daniela', 'Vega', 'Montes', 'daniela.vega@alumnos.unifront.com', @demo_password, '6865552022', 'ACTIVO');
 
+-- Relaciona los alumnos complementarios con el rol ALUMNO.
 INSERT INTO usuario_roles (
     id_usuario,
     id_rol
@@ -1599,6 +1659,7 @@ INSERT INTO usuario_roles (
 -- ALUMNOS COMPLEMENTARIOS
 -- =========================================================
 
+-- Registra expedientes academicos y datos personales de los alumnos complementarios.
 INSERT INTO alumnos (
     id_alumno,
     matricula,
@@ -1633,6 +1694,7 @@ INSERT INTO alumnos (
 -- INSCRIPCIONES COMPLEMENTARIAS
 -- =========================================================
 
+-- Inscribe a los alumnos complementarios en grupos y periodos de prueba.
 INSERT INTO inscripciones (
     id_inscripcion,
     id_alumno,
@@ -1655,6 +1717,7 @@ INSERT INTO inscripciones (
 -- CARGAS ACADEMICAS COMPLEMENTARIAS
 -- =========================================================
 
+-- Registra cargas academicas complementarias para los alumnos inscritos.
 INSERT INTO carga_academica (
     id_carga,
     id_alumno,
@@ -1678,6 +1741,7 @@ INSERT INTO carga_academica (
 -- PROCEDENCIA ACADEMICA COMPLEMENTARIA
 -- =========================================================
 
+-- Inserta la procedencia academica de los alumnos complementarios.
 INSERT INTO procedencia_academica (
     id_procedencia,
     id_alumno,
@@ -1701,6 +1765,7 @@ INSERT INTO procedencia_academica (
 -- TUTORES COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta tutores complementarios para los alumnos adicionales.
 INSERT INTO tutores (
     id_tutor,
     nombre,
@@ -1719,6 +1784,7 @@ INSERT INTO tutores (
 (9, 'Sergio Salas Ruiz', 'Padre', '6865553009', 'sergio.salas@example.com', 'Ingeniero'),
 (10, 'Martha Montes Reyes', 'Madre', '6865553010', 'martha.montes@example.com', 'Abogada');
 
+-- Relaciona alumnos complementarios con sus tutores.
 INSERT INTO alumno_tutor (
     id_alumno,
     id_tutor
@@ -1737,6 +1803,7 @@ INSERT INTO alumno_tutor (
 -- CONTACTOS DE EMERGENCIA COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta contactos de emergencia complementarios por alumno.
 INSERT INTO contactos_emergencia (
     id_contacto,
     id_alumno,
@@ -1761,6 +1828,7 @@ INSERT INTO contactos_emergencia (
 -- SEGUROS MEDICOS COMPLEMENTARIOS
 -- =========================================================
 
+-- Registra seguros medicos complementarios para los alumnos adicionales.
 INSERT INTO seguros_medicos (
     id_seguro,
     id_alumno,
@@ -1782,6 +1850,7 @@ INSERT INTO seguros_medicos (
 -- RECEPCION DE DOCUMENTOS COMPLEMENTARIA
 -- =========================================================
 
+-- Registra recepcion de documentos complementaria para expedientes de alumnos adicionales.
 INSERT INTO recepcion_documentos (
     id_recepcion,
     id_alumno,
@@ -1810,6 +1879,7 @@ INSERT INTO recepcion_documentos (
 -- CALIFICACIONES COMPLEMENTARIAS
 -- =========================================================
 
+-- Inserta calificaciones complementarias para probar capturas y consultas academicas.
 INSERT INTO calificaciones (
     id_calificacion,
     id_carga,
@@ -1831,6 +1901,7 @@ INSERT INTO calificaciones (
 -- ASISTENCIAS COMPLEMENTARIAS
 -- =========================================================
 
+-- Inserta asistencias complementarias para probar control de asistencia.
 INSERT INTO asistencias (
     id_asistencia,
     id_carga,
@@ -1852,6 +1923,7 @@ INSERT INTO asistencias (
 -- HISTORIAL ACADEMICO COMPLEMENTARIO
 -- =========================================================
 
+-- Inserta historial academico complementario con resultados aprobados y reprobados.
 INSERT INTO historial_academico (
     id_historial,
     id_alumno,
@@ -1877,6 +1949,7 @@ INSERT INTO historial_academico (
 -- EXTRAORDINARIOS COMPLEMENTARIOS
 -- =========================================================
 
+-- Inserta extraordinarios complementarios para probar regularizaciones y no presentados.
 INSERT INTO extraordinarios (
     id_extraordinario,
     id_alumno,
@@ -1901,6 +1974,7 @@ INSERT INTO extraordinarios (
 -- EMPRESAS COMPLEMENTARIAS
 -- =========================================================
 
+-- Inserta empresas complementarias para servicio social y practicas.
 INSERT INTO empresas (
     id_empresa,
     nombre,
@@ -1921,6 +1995,7 @@ INSERT INTO empresas (
 -- SERVICIO SOCIAL COMPLEMENTARIO
 -- =========================================================
 
+-- Registra servicios sociales complementarios con estados completados y en proceso.
 INSERT INTO servicio_social (
     id_servicio,
     id_alumno,
@@ -1945,6 +2020,7 @@ INSERT INTO servicio_social (
 -- PRACTICAS PROFESIONALES COMPLEMENTARIAS
 -- =========================================================
 
+-- Registra practicas profesionales complementarias con proyectos y asesores.
 INSERT INTO practicas_profesionales (
     id_practica,
     id_alumno,
@@ -1970,6 +2046,7 @@ INSERT INTO practicas_profesionales (
 -- TITULACION COMPLEMENTARIA
 -- =========================================================
 
+-- Registra procesos de titulacion complementarios con distintos avances.
 INSERT INTO titulacion (
     id_titulacion,
     id_alumno,
