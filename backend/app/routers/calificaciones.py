@@ -19,6 +19,7 @@ from app.database import get_db
 from app.models.alumno import Alumno
 from app.models.calificacion import Calificacion
 from app.models.carga_academica import CargaAcademica
+from app.models.cuatrimestre import Cuatrimestre
 from app.models.docente import Docente
 from app.models.grupo import Grupo
 from app.models.grupo_materia import GrupoMateria
@@ -29,7 +30,8 @@ from app.schemas.calificacion import (
     CalificacionCreate,
     CalificacionUpdate,
     CapturaCalificacionesBatch,
-    CapturaCalificacionesResponse
+    CapturaCalificacionesResponse,
+    CuadroHonorResponse
 )
 from app.schemas.detalles import (
     CalificacionDetalleResponse,
@@ -112,6 +114,101 @@ def _calcular_calificacion_final(calificaciones, parciales_por_id):
     ) / len(calificaciones_validas)
 
     return round(promedio, 2)
+
+
+def _generacion_alumno(alumno):
+    if not alumno or not alumno.fecha_ingreso:
+        return None
+
+    anio_inicio = alumno.fecha_ingreso.year
+
+    return f"{anio_inicio}-{anio_inicio + 3}"
+
+
+def _build_cuadro_honor_response(
+    cargas,
+    calificaciones_por_carga,
+    parciales_por_id,
+    tipo,
+    cuatrimestre=None
+):
+    alumnos = {}
+
+    for carga in cargas:
+        grupo_materia = carga.grupo_materia
+        grupo = grupo_materia.grupo if grupo_materia else None
+        cuatrimestre_model = grupo.cuatrimestre if grupo else None
+        alumno = carga.alumno
+
+        if not alumno:
+            continue
+
+        calificacion_final = _calcular_calificacion_final(
+            calificaciones_por_carga.get(carga.id_carga, []),
+            parciales_por_id
+        )
+
+        if calificacion_final is None:
+            continue
+
+        alumno_item = alumnos.setdefault(
+            alumno.id_alumno,
+            {
+                "id_alumno": alumno.id_alumno,
+                "matricula": alumno.matricula,
+                "numero_control": alumno.numero_control,
+                "nombre": _nombre_usuario(alumno.usuario),
+                "carrera": alumno.carrera.nombre if alumno.carrera else None,
+                "grupo": grupo.nombre if grupo else None,
+                "cuatrimestre": (
+                    cuatrimestre_model.numero
+                    if cuatrimestre_model else None
+                ),
+                "generacion": _generacion_alumno(alumno),
+                "calificaciones_finales": [],
+                "cuatrimestres": set(),
+                "estatus": alumno.estatus
+            }
+        )
+
+        alumno_item["calificaciones_finales"].append(calificacion_final)
+
+        if cuatrimestre_model and cuatrimestre_model.numero:
+            alumno_item["cuatrimestres"].add(cuatrimestre_model.numero)
+
+    alumnos_response = []
+
+    for alumno in alumnos.values():
+        calificaciones_finales = alumno.pop("calificaciones_finales")
+        cuatrimestres = alumno.pop("cuatrimestres")
+        promedio = round(
+            sum(calificaciones_finales) / len(calificaciones_finales),
+            2
+        )
+
+        if promedio < 90:
+            continue
+
+        alumnos_response.append({
+            **alumno,
+            "promedio": promedio,
+            "materias": len(calificaciones_finales),
+            "cuatrimestres_evaluados": (
+                len(cuatrimestres)
+                if tipo == "egresados" else None
+            )
+        })
+
+    alumnos_response.sort(
+        key=lambda alumno: alumno["promedio"],
+        reverse=True
+    )
+
+    return {
+        "tipo": tipo,
+        "cuatrimestre": cuatrimestre,
+        "alumnos": alumnos_response
+    }
 
 
 def _get_docente_actual(db: Session, usuario: Usuario):
@@ -261,6 +358,84 @@ def listar_grupos_captura(
     return get_grupos_materias_detalle(
         db,
         docente_id=docente.id_docente
+    )
+
+
+@router.get(
+    "/cuadro-honor",
+    response_model=CuadroHonorResponse
+)
+def obtener_cuadro_honor(
+    cuatrimestre: Optional[int] = None,
+    egresados: bool = False,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    if not egresados and (
+        cuatrimestre is None or cuatrimestre < 1 or cuatrimestre > 9
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Selecciona un cuatrimestre entre 1 y 9"
+        )
+
+    query = (
+        db.query(CargaAcademica)
+        .join(CargaAcademica.alumno)
+        .join(CargaAcademica.grupo_materia)
+        .join(GrupoMateria.grupo)
+        .options(
+            joinedload(CargaAcademica.alumno)
+            .joinedload(Alumno.usuario),
+            joinedload(CargaAcademica.alumno)
+            .joinedload(Alumno.carrera),
+            joinedload(CargaAcademica.grupo_materia)
+            .joinedload(GrupoMateria.grupo)
+            .joinedload(Grupo.cuatrimestre)
+        )
+        .filter(CargaAcademica.estatus != "BAJA")
+    )
+
+    if egresados:
+        query = query.filter(
+            Alumno.estatus.in_(["EGRESADO", "TITULADO"]),
+            Grupo.cuatrimestre.has(
+                Cuatrimestre.numero.between(1, 9)
+            )
+        )
+    else:
+        query = query.filter(
+            Grupo.cuatrimestre.has(numero=cuatrimestre)
+        )
+
+    cargas = query.all()
+    cargas_ids = [carga.id_carga for carga in cargas]
+    parciales = db.query(Parcial).order_by(Parcial.id_parcial).all()
+    parciales_por_id = {
+        parcial.id_parcial: parcial
+        for parcial in parciales
+    }
+    calificaciones_por_carga = {}
+
+    if cargas_ids:
+        calificaciones = (
+            db.query(Calificacion)
+            .filter(Calificacion.id_carga.in_(cargas_ids))
+            .all()
+        )
+
+        for calificacion in calificaciones:
+            calificaciones_por_carga.setdefault(
+                calificacion.id_carga,
+                []
+            ).append(calificacion)
+
+    return _build_cuadro_honor_response(
+        cargas,
+        calificaciones_por_carga,
+        parciales_por_id,
+        "egresados" if egresados else "cuatrimestre",
+        None if egresados else cuatrimestre
     )
 
 

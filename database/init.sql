@@ -630,10 +630,10 @@ INSERT INTO cuatrimestres (numero, nombre) VALUES
 (4, 'Cuarto Cuatrimestre'),
 (5, 'Quinto Cuatrimestre'),
 (6, 'Sexto Cuatrimestre'),
-(7, 'SÃ©ptimo Cuatrimestre'),
+(7, 'Séptimo Cuatrimestre'),
 (8, 'Octavo Cuatrimestre'),
 (9, 'Noveno Cuatrimestre'),
-(10, 'DÃ©cimo Cuatrimestre'),
+(10, 'Décimo Cuatrimestre'),
 (11, 'Onceavo Cuatrimestre');
 
 -- =========================================================
@@ -650,21 +650,21 @@ INSERT INTO carreras (
 ) VALUES
 (
     'RVOE-BC-053-M2/14',
-    'Licenciatura en CriminologÃ­a',
+    'Licenciatura en Criminología',
     'LICENCIATURA',
     9,
     TRUE
 ),
 (
     'RVOE-BC-051-M2/14',
-    'Licenciatura en GastronomÃ­a',
+    'Licenciatura en Gastronomía',
     'LICENCIATURA',
     9,
     TRUE
 ),
 (
     'RVOE-BC-L010-M2/17',
-    'Licenciatura en NutriciÃ³n',
+    'Licenciatura en Nutrición',
     'LICENCIATURA',
     9,
     TRUE
@@ -682,22 +682,22 @@ INSERT INTO planes_estudio (
 ) VALUES
 (
     1,
-    'Plan 2014 CriminologÃ­a',
+    'Plan 2014 Criminología',
     '2014-01-01'
 ),
 (
     2,
-    'Plan 2014 GastronomÃ­a',
+    'Plan 2014 Gastronomía',
     '2014-01-01'
 ),
 (
     3,
-    'Plan 2017 NutriciÃ³n',
+    'Plan 2017 Nutrición',
     '2017-01-01'
 );
 
 -- =========================================================
--- MATERIAS BÃSICAS
+-- MATERIAS BÁSICAS
 -- =========================================================
 
 -- Inserta las materias base usadas por el plan de Criminologia.
@@ -707,20 +707,20 @@ INSERT INTO materias (
     creditos,
     estado
 ) VALUES
-('CRILI1', 'CriminalÃ­stica I', 7.87, TRUE),
-('CRIM02', 'CriminologÃ­a I', 7.87, TRUE),
-('CRINV1', 'EstadÃ­stica BÃ¡sica', 6.12, TRUE),
-('CRIM01', 'InformÃ¡tica Aplicada a la CriminologÃ­a', 5.25, TRUE),
-('CRIJU1', 'IntroducciÃ³n al Estudio del Derecho', 6.12, TRUE),
-('CRIM03', 'Bases BiolÃ³gicas del Comportamiento', 7.87, TRUE),
-('CRIM04', 'CriminologÃ­a II', 7.87, TRUE),
+('CRILI1', 'Criminalística I', 7.87, TRUE),
+('CRIM02', 'Criminología I', 7.87, TRUE),
+('CRINV1', 'Estadística Básica', 6.12, TRUE),
+('CRIM01', 'Informática Aplicada a la Criminología', 5.25, TRUE),
+('CRIJU1', 'Introducción al Estudio del Derecho', 6.12, TRUE),
+('CRIM03', 'Bases Biológicas del Comportamiento', 7.87, TRUE),
+('CRIM04', 'Criminología II', 7.87, TRUE),
 ('CRIJU2', 'Derecho Constitucional', 7, TRUE),
-('CRIPS1', 'IntroducciÃ³n a la PsicologÃ­a', 7.87, TRUE),
-('CRILI2', 'Sistemas de IdentificaciÃ³n', 6.12, TRUE);
+('CRIPS1', 'Introducción a la Psicología', 7.87, TRUE),
+('CRILI2', 'Sistemas de Identificación', 6.12, TRUE);
 
 
 -- =========================================================
--- RELACIÃ“N PLAN - MATERIAS
+-- RELACIÓN PLAN - MATERIAS
 -- =========================================================
 
 -- Relaciona el plan de estudio de Criminologia con sus materias y cuatrimestres.
@@ -772,7 +772,7 @@ INSERT INTO tipos_documento (nombre) VALUES
 ('Acta de Nacimiento'),
 ('CURP'),
 ('Certificado'),
-('FotografÃ­as'),
+('Fotografías'),
 ('Comprobante de Domicilio');
 
 -- =========================================================
@@ -847,7 +847,7 @@ INSERT INTO docentes (
 ) VALUES (
     2,
     'DOC-001',
-    'CriminologÃ­a',
+    'Criminología',
     'Doctorado',
     '2020-01-10',
     TRUE
@@ -946,7 +946,7 @@ INSERT INTO alumnos (
 );
 
 -- =========================================================
--- INSCRIPCIÃ“N DEL ALUMNO
+-- INSCRIPCIÓN DEL ALUMNO
 -- =========================================================
 
 -- Inscribe al alumno de prueba en el grupo y periodo inicial.
@@ -965,7 +965,7 @@ INSERT INTO inscripciones (
 );
 
 -- =========================================================
--- CARGA ACADÃ‰MICA
+-- CARGA ACADÉMICA
 -- =========================================================
 
 -- Registra la carga academica inicial del alumno de prueba.
