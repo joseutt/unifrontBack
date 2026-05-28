@@ -102,3 +102,24 @@ class BoletaFinalResponse(BaseModel):
     materias: list[BoletaMateriaResponse] = Field(default_factory=list)
     promedio_general: Optional[float] = None
     asignaturas_acreditadas: int = 0
+
+
+class CuadroHonorAlumnoResponse(BaseModel):
+    id_alumno: int
+    matricula: Optional[str] = None
+    numero_control: Optional[str] = None
+    nombre: Optional[str] = None
+    carrera: Optional[str] = None
+    grupo: Optional[str] = None
+    cuatrimestre: Optional[int] = None
+    generacion: Optional[str] = None
+    promedio: float
+    materias: int
+    cuatrimestres_evaluados: Optional[int] = None
+    estatus: Optional[str] = None
+
+
+class CuadroHonorResponse(BaseModel):
+    tipo: str
+    cuatrimestre: Optional[int] = None
+    alumnos: list[CuadroHonorAlumnoResponse] = Field(default_factory=list)
