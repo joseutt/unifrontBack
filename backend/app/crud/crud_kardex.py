@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.alumno import Alumno
@@ -9,10 +10,70 @@ from app.models.carga_academica import CargaAcademica
 from app.models.grupo import Grupo
 from app.models.grupo_materia import GrupoMateria
 from app.models.historial_academico import HistorialAcademico
+from app.models.plan_materia import PlanMateria
+from app.models.usuario import Usuario
 
 
 def _split_nombre(apellido_paterno: str | None, apellido_materno: str | None):
     return apellido_paterno or "", apellido_materno or ""
+
+
+def _nombre_completo(usuario):
+    if not usuario:
+        return ""
+
+    return " ".join(
+        part
+        for part in (
+            usuario.nombre,
+            usuario.apellido_paterno,
+            usuario.apellido_materno,
+        )
+        if part
+    )
+
+
+def buscar_alumnos_kardex(db: Session, query: str, limit: int = 8):
+    query = (query or "").strip()
+
+    if len(query) < 2:
+        return []
+
+    like = f"%{query.lower()}%"
+    nombre_completo = func.lower(
+        func.concat(
+            Usuario.nombre,
+            " ",
+            Usuario.apellido_paterno,
+            " ",
+            func.coalesce(Usuario.apellido_materno, ""),
+        )
+    )
+
+    alumnos = (
+        db.query(Alumno)
+        .join(Alumno.usuario)
+        .options(joinedload(Alumno.usuario), joinedload(Alumno.carrera))
+        .filter(
+            or_(
+                func.lower(Alumno.matricula).like(like),
+                nombre_completo.like(like),
+            )
+        )
+        .order_by(Alumno.matricula.asc())
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        {
+            "id_alumno": alumno.id_alumno,
+            "matricula": alumno.matricula or "",
+            "nombre": _nombre_completo(alumno.usuario),
+            "carrera": alumno.carrera.nombre if alumno.carrera else "",
+        }
+        for alumno in alumnos
+    ]
 
 
 def get_kardex_by_matricula(db: Session, matricula: str):
@@ -88,6 +149,20 @@ def get_kardex_by_matricula(db: Session, matricula: str):
             (h.id_materia, h.id_periodo)
         ] = float(h.calificacion_final)
 
+    plan_materias = (
+        db.query(PlanMateria)
+        .filter(
+            PlanMateria.id_plan == alumno.id_plan,
+            PlanMateria.id_materia.in_(ids_materias) if ids_materias else False,
+        )
+        .all()
+    )
+    cuatrimestre_por_materia = {
+        pm.id_materia: pm.cuatrimestre.numero
+        for pm in plan_materias
+        if pm.cuatrimestre
+    }
+
     for carga in cargas:
         gm = carga.grupo_materia
 
@@ -103,9 +178,9 @@ def get_kardex_by_matricula(db: Session, matricula: str):
         if not gm.periodo:
             continue
 
-        cuatrimestre_num = 0
+        cuatrimestre_num = cuatrimestre_por_materia.get(gm.id_materia, 0)
 
-        if gm.grupo.cuatrimestre:
+        if not cuatrimestre_num and gm.grupo.cuatrimestre:
             cuatrimestre_num = gm.grupo.cuatrimestre.numero
 
         periodo_escolar = gm.periodo.nombre or ""
@@ -169,3 +244,42 @@ def get_kardex_by_matricula(db: Session, matricula: str):
         ),
         "historial": historial,
     }
+
+
+def get_kardex_by_query(db: Session, query: str):
+    query = (query or "").strip()
+
+    if not query:
+        return None
+
+    alumno = (
+        db.query(Alumno)
+        .join(Alumno.usuario)
+        .filter(Alumno.matricula == query)
+        .first()
+    )
+
+    if not alumno:
+        like = f"%{query.lower()}%"
+        nombre_completo = func.lower(
+            func.concat(
+                Usuario.nombre,
+                " ",
+                Usuario.apellido_paterno,
+                " ",
+                func.coalesce(Usuario.apellido_materno, ""),
+            )
+        )
+
+        alumno = (
+            db.query(Alumno)
+            .join(Alumno.usuario)
+            .filter(nombre_completo.like(like))
+            .order_by(Alumno.matricula.asc())
+            .first()
+        )
+
+    if not alumno:
+        return None
+
+    return get_kardex_by_matricula(db, alumno.matricula)

@@ -23,3 +23,10 @@ class KardexResponse(BaseModel):
     carrera: str = ""
     plan_estudios: str = ""
     historial: List[KardexCuatrimestre] = Field(default_factory=list)
+
+
+class KardexAlumnoBusqueda(BaseModel):
+    id_alumno: int
+    matricula: str = ""
+    nombre: str = ""
+    carrera: str = ""
