@@ -130,8 +130,10 @@ class HistorialAcademicoDetalleResponse(BaseModel):
     resultado: Optional[str] = None
     fecha_cierre: Optional[date] = None
     alumno: Optional[AlumnoDetalle] = None
+    carrera: Optional[CarreraDetalle] = None
     materia: Optional[MateriaDetalle] = None
     periodo: Optional[PeriodoDetalle] = None
+
 
 
 class ParcialDetalle(BaseModel):

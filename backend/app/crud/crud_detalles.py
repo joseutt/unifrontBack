@@ -452,13 +452,16 @@ def get_historiales_academicos_detalle(
     materia_id=None,
     periodo_id=None,
     resultado=None,
-    tipo_evaluacion=None
+    tipo_evaluacion=None,
+    carrera_id=None,
 ):
     query = db.query(HistorialAcademico).options(
         joinedload(HistorialAcademico.alumno).joinedload(Alumno.usuario),
+        joinedload(HistorialAcademico.alumno).joinedload(Alumno.carrera),
         joinedload(HistorialAcademico.materia),
         joinedload(HistorialAcademico.periodo)
     )
+
 
     if alumno_id is not None:
         query = query.filter(HistorialAcademico.id_alumno == alumno_id)
@@ -470,6 +473,10 @@ def get_historiales_academicos_detalle(
         query = query.filter(HistorialAcademico.resultado == resultado)
     if tipo_evaluacion is not None:
         query = query.filter(HistorialAcademico.tipo_evaluacion == tipo_evaluacion)
+    if carrera_id is not None:
+        query = query.join(HistorialAcademico.alumno)
+        query = query.filter(Alumno.id_carrera == carrera_id)
+
 
     return [
         _historial(historial)
@@ -492,9 +499,11 @@ def _historial(historial):
         "resultado": historial.resultado,
         "fecha_cierre": historial.fecha_cierre,
         "alumno": _alumno(historial.alumno),
+        "carrera": _carrera(historial.alumno.carrera) if historial.alumno else None,
         "materia": _materia(historial.materia),
         "periodo": _periodo(historial.periodo)
     }
+
 
 
 def get_calificaciones_detalle(

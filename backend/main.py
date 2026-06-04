@@ -40,8 +40,10 @@ from app.routers import (
     auth,
     documentos,
     plan_estudio,
-    reportes
+    reportes,
+    kardex,
 )
+
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -108,3 +110,4 @@ app.include_router(auth.router)
 app.include_router(documentos.router)
 app.include_router(plan_estudio.router)
 app.include_router(reportes.router)
+app.include_router(kardex.router)

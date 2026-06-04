@@ -30,6 +30,7 @@ router = APIRouter(
 )
 def listar_historiales_academicos(
     alumno_id: Optional[int] = None,
+    carrera_id: Optional[int] = None,
     materia_id: Optional[int] = None,
     periodo_id: Optional[int] = None,
     resultado: Optional[str] = None,
@@ -39,11 +40,13 @@ def listar_historiales_academicos(
     return get_historiales_academicos_detalle(
         db,
         alumno_id=alumno_id,
+        carrera_id=carrera_id,
         materia_id=materia_id,
         periodo_id=periodo_id,
         resultado=resultado,
         tipo_evaluacion=tipo_evaluacion
     )
+
 
 
 @router.get(
