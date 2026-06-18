@@ -74,6 +74,7 @@ class BoletaAlumnoResponse(BaseModel):
 class BoletaCarreraResponse(BaseModel):
     id_carrera: Optional[int] = None
     clave: Optional[str] = None
+    rvoe: Optional[str] = None
     nombre: Optional[str] = None
 
 

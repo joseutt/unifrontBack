@@ -24,6 +24,11 @@ class Carrera(Base):
         unique=True
     )
 
+    rvoe = Column(
+        String(30),
+        unique=True
+    )
+
     nombre = Column(
         String(150),
         nullable=False

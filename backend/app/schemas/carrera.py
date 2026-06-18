@@ -3,6 +3,7 @@ from typing import Optional
 
 class CarreraBase(BaseModel):
     clave: str
+    rvoe: Optional[str] = None
     nombre: str
     nivel: str
     duracion_cuatrimestres: int
@@ -12,6 +13,7 @@ class CarreraCreate(CarreraBase):
 
 class CarreraUpdate(BaseModel):
     clave: Optional[str] = None
+    rvoe: Optional[str] = None
     nombre: Optional[str] = None
     nivel: Optional[str] = None
     duracion_cuatrimestres: Optional[int] = None
@@ -26,6 +28,8 @@ class CarreraResponse(CarreraBase):
 
 class CarreraSimple(BaseModel):
     id_carrera: int
+    clave: Optional[str] = None
+    rvoe: Optional[str] = None
     nombre: str
 
     class Config:

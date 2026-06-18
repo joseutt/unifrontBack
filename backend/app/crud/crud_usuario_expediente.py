@@ -53,6 +53,7 @@ def _carrera(carrera):
     return {
         "id_carrera": carrera.id_carrera,
         "clave": carrera.clave,
+        "rvoe": carrera.rvoe,
         "nombre": carrera.nombre,
         "nivel": carrera.nivel,
         "duracion_cuatrimestres": carrera.duracion_cuatrimestres,

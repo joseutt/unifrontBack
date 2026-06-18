@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import date
 
 class AlumnoBase(BaseModel):
-    matricula: str
+    matricula: Optional[str] = None
     numero_control: Optional[str] = None
     id_usuario: int
     id_carrera: int
@@ -22,7 +22,8 @@ class AlumnoBase(BaseModel):
     foto: Optional[str] = None
 
 class AlumnoCreate(AlumnoBase):
-    pass
+    id_grupo: Optional[int] = None
+    id_periodo: Optional[int] = None
 
 class AlumnoResponse(AlumnoBase):
     id_alumno: int
@@ -35,6 +36,7 @@ class AlumnoResponse(AlumnoBase):
 class AlumnoCarreraDetalle(BaseModel):
     id_carrera: int
     clave: Optional[str] = None
+    rvoe: Optional[str] = None
     nombre: Optional[str] = None
 
 

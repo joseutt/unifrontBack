@@ -550,6 +550,7 @@ def obtener_boleta_final(
         "carrera": {
             "id_carrera": alumno.carrera.id_carrera,
             "clave": alumno.carrera.clave,
+            "rvoe": alumno.carrera.rvoe,
             "nombre": alumno.carrera.nombre
         } if alumno.carrera else None,
         "periodo": {

@@ -5,6 +5,8 @@ from app.core.security import (
     hash_password
 )
 
+DEFAULT_USER_PASSWORD = "Admin123*"
+
 def get_usuarios(db: Session):
     return db.query(Usuario).all()
 
@@ -25,7 +27,7 @@ def create_usuario(
 
     nuevo_usuario = Usuario(
         **usuario_data,
-        password=hash_password(usuario.password)
+        password=hash_password(usuario.password or DEFAULT_USER_PASSWORD)
     )
 
     db.add(nuevo_usuario)

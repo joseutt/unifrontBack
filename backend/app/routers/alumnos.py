@@ -18,6 +18,7 @@ from app.crud.crud_alumno import (
     get_alumnos,
     get_alumno,
     create_alumno,
+    get_siguiente_matricula,
     update_alumno,
     delete_alumno
 )
@@ -56,6 +57,7 @@ def _alumno_detalle(alumno):
         "carrera": {
             "id_carrera": alumno.carrera.id_carrera,
             "clave": alumno.carrera.clave,
+            "rvoe": alumno.carrera.rvoe,
             "nombre": alumno.carrera.nombre
         } if alumno.carrera else None,
         "plan": {
@@ -98,6 +100,21 @@ def listar_alumnos_detalle(
     return [_alumno_detalle(alumno) for alumno in alumnos]
 
 
+@router.get("/siguiente-matricula")
+def obtener_siguiente_matricula(
+    db: Session = Depends(get_db)
+):
+    try:
+        return {
+            "matricula": get_siguiente_matricula(db)
+        }
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        ) from error
+
+
 @router.get(
     "/{alumno_id}",
     response_model=AlumnoResponse
@@ -129,10 +146,16 @@ def crear_alumno(
     alumno: AlumnoCreate,
     db: Session = Depends(get_db)
 ):
-    return create_alumno(
-        db,
-        alumno
-    )
+    try:
+        return create_alumno(
+            db,
+            alumno
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        ) from error
 
 
 @router.patch(
