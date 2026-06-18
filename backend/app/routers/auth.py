@@ -14,12 +14,15 @@ from sqlalchemy.orm import Session
 from app.models.usuario import Usuario
 
 from app.core.security import (
+    hash_password,
     verify_password,
     create_access_token,
     get_current_user
 )
 
 from app.database import get_db
+from app.crud.crud_usuario_expediente import get_usuario_expediente
+from app.schemas.auth import PasswordUpdate
 from app.schemas.usuario import UsuarioResponse
 
 router = APIRouter(
@@ -90,3 +93,51 @@ def obtener_usuario_actual(
     usuario: Usuario = Depends(get_current_user)
 ):
     return usuario
+
+
+@router.get("/me/expediente")
+def obtener_expediente_usuario_actual(
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    expediente = get_usuario_expediente(db, usuario.id_usuario)
+
+    if not expediente:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )
+
+    return expediente
+
+
+@router.patch("/me/password")
+def actualizar_password_usuario_actual(
+    datos: PasswordUpdate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not verify_password(datos.password_actual, usuario.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña actual no es correcta"
+        )
+
+    usuario_db = (
+        db.query(Usuario)
+        .filter(Usuario.id_usuario == usuario.id_usuario)
+        .first()
+    )
+
+    if not usuario_db:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )
+
+    usuario_db.password = hash_password(datos.nueva_password)
+    db.commit()
+
+    return {
+        "message": "Contraseña actualizada correctamente"
+    }

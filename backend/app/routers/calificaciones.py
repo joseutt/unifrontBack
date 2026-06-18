@@ -230,6 +230,29 @@ def _get_docente_actual(db: Session, usuario: Usuario):
     return docente
 
 
+def _get_alumno_actual(db: Session, usuario: Usuario):
+    alumno = (
+        db.query(Alumno)
+        .options(
+            joinedload(Alumno.usuario),
+            joinedload(Alumno.carrera)
+        )
+        .filter(
+            Alumno.id_usuario == usuario.id_usuario,
+            Alumno.estatus != "BAJA"
+        )
+        .first()
+    )
+
+    if not alumno:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El usuario actual no tiene un perfil de alumno activo"
+        )
+
+    return alumno
+
+
 def _validar_grupo_docente(
     db: Session,
     grupo_materia_id: int,
@@ -320,6 +343,130 @@ def _build_captura_response(db: Session, grupo_materia_id: int):
             }
             for carga in cargas
         ]
+    }
+
+
+def _build_boleta_final(db: Session, alumno_id: int, periodo_id: int):
+    alumno = (
+        db.query(Alumno)
+        .options(
+            joinedload(Alumno.usuario),
+            joinedload(Alumno.carrera)
+        )
+        .filter(Alumno.id_alumno == alumno_id)
+        .first()
+    )
+
+    if not alumno:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alumno no encontrado"
+        )
+
+    cargas = (
+        db.query(CargaAcademica)
+        .join(CargaAcademica.grupo_materia)
+        .options(
+            joinedload(CargaAcademica.grupo_materia)
+            .joinedload(GrupoMateria.materia),
+            joinedload(CargaAcademica.grupo_materia)
+            .joinedload(GrupoMateria.periodo),
+            joinedload(CargaAcademica.grupo_materia)
+            .joinedload(GrupoMateria.grupo)
+            .joinedload(Grupo.cuatrimestre)
+        )
+        .filter(
+            CargaAcademica.id_alumno == alumno_id,
+            CargaAcademica.estatus != "BAJA",
+            GrupoMateria.id_periodo == periodo_id
+        )
+        .all()
+    )
+
+    cargas_ids = [carga.id_carga for carga in cargas]
+    parciales = db.query(Parcial).order_by(Parcial.id_parcial).all()
+    parciales_por_id = {
+        parcial.id_parcial: parcial
+        for parcial in parciales
+    }
+    calificaciones = []
+
+    if cargas_ids:
+        calificaciones = (
+            db.query(Calificacion)
+            .filter(Calificacion.id_carga.in_(cargas_ids))
+            .all()
+        )
+
+    calificaciones_por_carga = {}
+
+    for calificacion in calificaciones:
+        calificaciones_por_carga.setdefault(
+            calificacion.id_carga,
+            []
+        ).append(calificacion)
+
+    materias = []
+    periodo = None
+    cuatrimestre = None
+
+    for carga in cargas:
+        grupo_materia = carga.grupo_materia
+        materia = grupo_materia.materia if grupo_materia else None
+        periodo = periodo or (grupo_materia.periodo if grupo_materia else None)
+        grupo = grupo_materia.grupo if grupo_materia else None
+        cuatrimestre = cuatrimestre or (
+            grupo.cuatrimestre
+            if grupo and grupo.cuatrimestre else None
+        )
+        calificacion_final = _calcular_calificacion_final(
+            calificaciones_por_carga.get(carga.id_carga, []),
+            parciales_por_id
+        )
+
+        materias.append({
+            "id_materia": materia.id_materia if materia else None,
+            "nombre": materia.nombre if materia else None,
+            "clave": materia.clave if materia else None,
+            "calificacion_final": calificacion_final
+        })
+
+    calificaciones_finales = [
+        materia["calificacion_final"]
+        for materia in materias
+        if materia["calificacion_final"] is not None
+    ]
+    promedio_general = None
+
+    if calificaciones_finales:
+        promedio_general = round(
+            sum(calificaciones_finales) / len(calificaciones_finales),
+            2
+        )
+
+    return {
+        "alumno": _alumno_detalle(alumno),
+        "carrera": {
+            "id_carrera": alumno.carrera.id_carrera,
+            "clave": alumno.carrera.clave,
+            "rvoe": alumno.carrera.rvoe,
+            "nombre": alumno.carrera.nombre
+        } if alumno.carrera else None,
+        "periodo": {
+            "id_periodo": periodo.id_periodo,
+            "nombre": periodo.nombre
+        } if periodo else None,
+        "cuatrimestre": {
+            "numero": cuatrimestre.numero,
+            "nombre": cuatrimestre.nombre
+        } if cuatrimestre else None,
+        "materias": materias,
+        "promedio_general": promedio_general,
+        "asignaturas_acreditadas": len([
+            calificacion
+            for calificacion in calificaciones_finales
+            if calificacion >= 70
+        ])
     }
 
 
@@ -448,127 +595,21 @@ def obtener_boleta_final(
     periodo_id: int,
     db: Session = Depends(get_db)
 ):
-    alumno = (
-        db.query(Alumno)
-        .options(
-            joinedload(Alumno.usuario),
-            joinedload(Alumno.carrera)
-        )
-        .filter(Alumno.id_alumno == alumno_id)
-        .first()
-    )
+    return _build_boleta_final(db, alumno_id, periodo_id)
 
-    if not alumno:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Alumno no encontrado"
-        )
 
-    cargas = (
-        db.query(CargaAcademica)
-        .join(CargaAcademica.grupo_materia)
-        .options(
-            joinedload(CargaAcademica.grupo_materia)
-            .joinedload(GrupoMateria.materia),
-            joinedload(CargaAcademica.grupo_materia)
-            .joinedload(GrupoMateria.periodo),
-            joinedload(CargaAcademica.grupo_materia)
-            .joinedload(GrupoMateria.grupo)
-            .joinedload(Grupo.cuatrimestre)
-        )
-        .filter(
-            CargaAcademica.id_alumno == alumno_id,
-            CargaAcademica.estatus != "BAJA",
-            GrupoMateria.id_periodo == periodo_id
-        )
-        .all()
-    )
+@router.get(
+    "/boleta-final/me",
+    response_model=BoletaFinalResponse
+)
+def obtener_mi_boleta_final(
+    periodo_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    alumno = _get_alumno_actual(db, usuario)
 
-    cargas_ids = [carga.id_carga for carga in cargas]
-    parciales = db.query(Parcial).order_by(Parcial.id_parcial).all()
-    parciales_por_id = {
-        parcial.id_parcial: parcial
-        for parcial in parciales
-    }
-    calificaciones = []
-
-    if cargas_ids:
-        calificaciones = (
-            db.query(Calificacion)
-            .filter(Calificacion.id_carga.in_(cargas_ids))
-            .all()
-        )
-
-    calificaciones_por_carga = {}
-
-    for calificacion in calificaciones:
-        calificaciones_por_carga.setdefault(
-            calificacion.id_carga,
-            []
-        ).append(calificacion)
-
-    materias = []
-    periodo = None
-    cuatrimestre = None
-
-    for carga in cargas:
-        grupo_materia = carga.grupo_materia
-        materia = grupo_materia.materia if grupo_materia else None
-        periodo = periodo or (grupo_materia.periodo if grupo_materia else None)
-        grupo = grupo_materia.grupo if grupo_materia else None
-        cuatrimestre = cuatrimestre or (
-            grupo.cuatrimestre
-            if grupo and grupo.cuatrimestre else None
-        )
-        calificacion_final = _calcular_calificacion_final(
-            calificaciones_por_carga.get(carga.id_carga, []),
-            parciales_por_id
-        )
-
-        materias.append({
-            "id_materia": materia.id_materia if materia else None,
-            "nombre": materia.nombre if materia else None,
-            "clave": materia.clave if materia else None,
-            "calificacion_final": calificacion_final
-        })
-
-    calificaciones_finales = [
-        materia["calificacion_final"]
-        for materia in materias
-        if materia["calificacion_final"] is not None
-    ]
-    promedio_general = None
-
-    if calificaciones_finales:
-        promedio_general = round(
-            sum(calificaciones_finales) / len(calificaciones_finales),
-            2
-        )
-
-    return {
-        "alumno": _alumno_detalle(alumno),
-        "carrera": {
-            "id_carrera": alumno.carrera.id_carrera,
-            "clave": alumno.carrera.clave,
-            "rvoe": alumno.carrera.rvoe,
-            "nombre": alumno.carrera.nombre
-        } if alumno.carrera else None,
-        "periodo": {
-            "id_periodo": periodo.id_periodo,
-            "nombre": periodo.nombre
-        } if periodo else None,
-        "cuatrimestre": {
-            "numero": cuatrimestre.numero,
-            "nombre": cuatrimestre.nombre
-        } if cuatrimestre else None,
-        "materias": materias,
-        "promedio_general": promedio_general,
-        "asignaturas_acreditadas": len([
-            calificacion
-            for calificacion in calificaciones_finales
-            if calificacion >= 70
-        ])
-    }
+    return _build_boleta_final(db, alumno.id_alumno, periodo_id)
 
 
 @router.get(
