@@ -40,6 +40,7 @@ CREATE TABLE usuario_roles (
 CREATE TABLE carreras (
     id_carrera INT PRIMARY KEY AUTO_INCREMENT,
     clave VARCHAR(20) UNIQUE,
+    rvoe VARCHAR(30) UNIQUE,
     nombre VARCHAR(150) NOT NULL,
     nivel ENUM('TSU','LICENCIATURA','MAESTRIA', 'INGENIERIA') NOT NULL,
     duracion_cuatrimestres INT NOT NULL,
@@ -643,12 +644,14 @@ INSERT INTO cuatrimestres (numero, nombre) VALUES
 -- Inserta las carreras principales que estaran disponibles en el sistema.
 INSERT INTO carreras (
     clave,
+    rvoe,
     nombre,
     nivel,
     duracion_cuatrimestres,
     estado
 ) VALUES
 (
+    '260125',
     'RVOE-BC-053-M2/14',
     'Licenciatura en Criminología',
     'LICENCIATURA',
@@ -656,6 +659,7 @@ INSERT INTO carreras (
     TRUE
 ),
 (
+    '260126',
     'RVOE-BC-051-M2/14',
     'Licenciatura en Gastronomía',
     'LICENCIATURA',
@@ -663,6 +667,7 @@ INSERT INTO carreras (
     TRUE
 ),
 (
+    '260127',
     'RVOE-BC-L010-M2/17',
     'Licenciatura en Nutrición',
     'LICENCIATURA',
@@ -1446,18 +1451,19 @@ SET @demo_password = '$2b$12$fDyZK5l1./1TY19rgskvc.lVaerFgt3eIjBN3JVUl2guZ1i0V64
 INSERT INTO carreras (
     id_carrera,
     clave,
+    rvoe,
     nombre,
     nivel,
     duracion_cuatrimestres,
     estado
 ) VALUES
-(4, 'RVOE-BC-ING01/22', 'Ingenieria en Sistemas Computacionales', 'INGENIERIA', 10, TRUE),
-(5, 'RVOE-BC-LADM/21', 'Licenciatura en Administracion', 'LICENCIATURA', 9, TRUE),
-(6, 'RVOE-BC-LDER/21', 'Licenciatura en Derecho', 'LICENCIATURA', 9, TRUE),
-(7, 'RVOE-BC-LPSI/20', 'Licenciatura en Psicologia', 'LICENCIATURA', 9, TRUE),
-(8, 'RVOE-BC-LENF/20', 'Licenciatura en Enfermeria', 'LICENCIATURA', 9, TRUE),
-(9, 'RVOE-BC-MEDU/24', 'Maestria en Educacion', 'MAESTRIA', 6, TRUE),
-(10, 'RVOE-BC-TSUDS/25', 'TSU en Desarrollo de Software', 'TSU', 6, TRUE);
+(4, 'ING01', 'RVOE-BC-ING01/22', 'Ingenieria en Sistemas Computacionales', 'INGENIERIA', 10, TRUE),
+(5, 'LADM21', 'RVOE-BC-LADM/21', 'Licenciatura en Administracion', 'LICENCIATURA', 9, TRUE),
+(6, 'LDER21', 'RVOE-BC-LDER/21', 'Licenciatura en Derecho', 'LICENCIATURA', 9, TRUE),
+(7, 'LPSI20', 'RVOE-BC-LPSI/20', 'Licenciatura en Psicologia', 'LICENCIATURA', 9, TRUE),
+(8, 'LENF20', 'RVOE-BC-LENF/20', 'Licenciatura en Enfermeria', 'LICENCIATURA', 9, TRUE),
+(9, 'MEDU24', 'RVOE-BC-MEDU/24', 'Maestria en Educacion', 'MAESTRIA', 6, TRUE),
+(10, 'TSUDS25', 'RVOE-BC-TSUDS/25', 'TSU en Desarrollo de Software', 'TSU', 6, TRUE);
 
 -- =========================================================
 -- PLANES DE ESTUDIO COMPLEMENTARIOS

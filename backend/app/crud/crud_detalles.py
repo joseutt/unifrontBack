@@ -114,6 +114,7 @@ def _carrera(carrera):
     return {
         "id_carrera": carrera.id_carrera,
         "clave": carrera.clave,
+        "rvoe": carrera.rvoe,
         "nombre": carrera.nombre
     }
 

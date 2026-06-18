@@ -47,6 +47,7 @@ class PeriodoDetalle(BaseModel):
 class CarreraDetalle(BaseModel):
     id_carrera: int
     clave: Optional[str] = None
+    rvoe: Optional[str] = None
     nombre: Optional[str] = None
 
 

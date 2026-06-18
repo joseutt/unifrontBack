@@ -36,6 +36,7 @@ class AlumnoResponse(AlumnoBase):
 class AlumnoCarreraDetalle(BaseModel):
     id_carrera: int
     clave: Optional[str] = None
+    rvoe: Optional[str] = None
     nombre: Optional[str] = None
 
 

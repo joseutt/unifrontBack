@@ -212,6 +212,7 @@ def _sheet_carreras(db: Session) -> dict:
         "columns": [
             {"key": "id_carrera", "header": "ID carrera"},
             {"key": "clave", "header": "Clave"},
+            {"key": "rvoe", "header": "RVOE"},
             {"key": "nombre", "header": "Nombre"},
             {"key": "nivel", "header": "Nivel"},
             {
@@ -225,6 +226,7 @@ def _sheet_carreras(db: Session) -> dict:
             {
                 "id_carrera": carrera.id_carrera,
                 "clave": carrera.clave,
+                "rvoe": carrera.rvoe,
                 "nombre": carrera.nombre,
                 "nivel": carrera.nivel,
                 "duracion_cuatrimestres": carrera.duracion_cuatrimestres,
@@ -657,7 +659,7 @@ def obtener_reporte_reinscripcion_alumnos(
             ),
             "grupo": grupo.nombre,
             "clave": clave,
-            "rvoe": carrera.clave if carrera else "",
+            "rvoe": carrera.rvoe if carrera else "",
             "ciclo": _ciclo_reinscripcion(periodo),
             "periodo": {
                 "id_periodo": periodo.id_periodo,
