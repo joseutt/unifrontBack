@@ -12,7 +12,7 @@ class UsuarioBase(BaseModel):
     roles: List[str]
 
 class UsuarioCreate(UsuarioBase):
-    password: str
+    password: Optional[str] = None
 
 class UsuarioUpdate(BaseModel):
     nombre: Optional[str] = None
