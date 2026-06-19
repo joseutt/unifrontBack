@@ -63,7 +63,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://unifront-front.vercel.app/",
+        "https://unifront-front-git-main-joses-projects-6d83efa0.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
